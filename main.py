@@ -92,14 +92,12 @@ def get_random_fact():
   useless_fact = f'{json_data["text"]}'
   return useless_fact
 
-
-
 #help command
 @bot.group(invoke_without_command=True)
 async def help(ctx):
   embed = discord.Embed(title='Commands:', color=0x70e68a)
   embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
-  embed.set_author(name='Github Link', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
+  embed.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
   global cmds
   for cmd in cmds:
     embed.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
