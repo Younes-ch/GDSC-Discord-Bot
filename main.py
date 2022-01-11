@@ -3,7 +3,7 @@ from discord.ext import commands
 import os
 import requests
 import json
-from keep_alive import keep_alive
+#from keep_alive import keep_alive
 import logging
 import asyncio
 
@@ -516,5 +516,5 @@ async def quote(ctx):
   embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url=ctx.author.avatar_url)
   await ctx.send(embed=embed)
 
-keep_alive()
+# keep_alive()
 bot.run(os.getenv('TOKEN'))
