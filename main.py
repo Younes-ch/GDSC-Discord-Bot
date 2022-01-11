@@ -25,7 +25,7 @@ cmds = [
   { 
     'name' : 'weather',  
     'args' : '[**city name**]',
-    'dis' : 'Returns current weather in the city mentioned.'
+    'dis' : 'Returns current weather in the city mentioned or Sousse if no city was mentioned.'
   },
   {
     'name' : 'say',
