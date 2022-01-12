@@ -14,22 +14,22 @@ bot.remove_command('help')
 cmds = [
   {
     'name' : 'avatar',  
-    'args' : '[**member**]',
+    'args' : '[member]',
     'dis' : 'Returns the avatar of the member mentioned or the user who called the command (in case no one was mentioned).'
   },
   {
     'name' : 'meme',  
-    'args' : '[**subreddit name**]',
+    'args' : '[subreddit name]',
     'dis' : 'Returns a random picture from the subbredit you provided or Dankmemes/memes/me_irl (in case no Subbredit name was provided).'
   },
   { 
     'name' : 'weather',  
-    'args' : '[**city name**]',
+    'args' : '[city name]',
     'dis' : 'Returns current weather in the city mentioned or Sousse if no city was mentioned.'
   },
   {
     'name' : 'say',
-    'args' : '[**message**]',
+    'args' : '[message]',
     'dis' : 'Sends the message as the bot.'
   },
   {
@@ -39,7 +39,7 @@ cmds = [
   },
   {
     "name" : 'corona', 
-    'args' : '[**country name**]',
+    'args' : '[country name]',
     'dis' : 'Returns today''s COVID-19 statistics of the mentioned country (Tunisia if none was mentioned).'
   },
   {
@@ -49,17 +49,17 @@ cmds = [
   },
   {
     "name" : 'rps', 
-    'args' : '[**member**]',
+    'args' : '[member]',
     'dis' : 'Creates a RPS game between you and the mentioned member.'
   },
   {
     "name" : 'joke', 
-    'args' : '[**word**]',
+    'args' : '[word]',
     'dis' : 'Returns a random joke contains the word (word argument can be omitted).'
   },
   {
     "name" : 'movie', 
-    'args' : '[**movie/serie name**]',
+    'args' : '[movie/serie name]',
     'dis' : 'Returns detailed information about the movie/serie mentioned.'
   },
   {
