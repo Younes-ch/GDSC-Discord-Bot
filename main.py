@@ -20,7 +20,7 @@ cmds = [
   {
     'name' : 'meme',  
     'args' : '[**subreddit name**]',
-    'dis' : 'Returns a random picture from the subbredit you provide or Dankmemes/memes/me_irl (in case no Subbredit name was provided).'
+    'dis' : 'Returns a random picture from the subbredit you provided or Dankmemes/memes/me_irl (in case no Subbredit name was provided).'
   },
   { 
     'name' : 'weather',  
@@ -59,8 +59,8 @@ cmds = [
   },
   {
     "name" : 'movie', 
-    'args' : '[**movie name**]',
-    'dis' : 'Returns detailed information about the movie mentioned.'
+    'args' : '[**movie/serie name**]',
+    'dis' : 'Returns detailed information about the movie/serie mentioned.'
   },
   {
     "name" : 'ping', 
@@ -114,7 +114,8 @@ async def weather(ctx, *, city : str = None):
   
   if 'message' in json_data.keys():
     await ctx.message.add_reaction('❌')
-    await ctx.reply(json_data['message'].capitalize() + '.', mention_author=False)
+    embed = discord.Embed(description=f':rolling_eyes: - {ctx.author.name} I can\'t find a city named **{city}**', color = 0xe74c3c)
+    await ctx.reply(embed=embed, mention_author=False)
   else:
     country_code = json_data['sys']['country'].lower()
     city = json_data['name']
@@ -126,7 +127,7 @@ async def weather(ctx, *, city : str = None):
     humidity = str(json_data['main']['humidity']) + '%'
     wind_speed = str(json_data['wind']['speed']) + 'm/s'
 
-    embed = discord.Embed(title=f'Current weather in {city} :flag_{country_code}:', color=ctx.author.top_role.color)
+    embed = discord.Embed(title=f'Current weather in {city} :flag_{country_code}::', color=ctx.author.top_role.color)
     embed.add_field(name='Weather:', value=weather_main)
     embed.add_field(name='Description:', value=weather_description)
     embed.add_field(name='Temperature:', value=temperature)
@@ -156,7 +157,8 @@ async def meme(ctx, *, subreddit : str = None):
       await ctx.send(json_data['url'])
   else:
     await ctx.message.add_reaction('❌')
-    await ctx.reply(json_data['message'], mention_author=False)
+    embed = discord.Embed(description=f':rolling_eyes: - {ctx.author.name} I can\'t find a subreddit named **{subreddit}**', color = 0xe74c3c)
+    await ctx.reply(embed=embed, mention_author=False)
 
 #fact command
 @bot.command()
@@ -264,7 +266,7 @@ async def movie(ctx, *, search_term : str):
   json_data = json.loads(response.text)
   if not json_data['results'] or json_data['results'][0]['resultType'] != 'Title':
     await ctx.message.add_reaction('❌')
-    embed = discord.Embed(description=':no_entry: - No movies/series were found that match your provided filter(s).!', color=0xe74c3c)
+    embed = discord.Embed(description=':rolling_eyes: - No movies/series were found that match your provided filter(s).!', color=0xe74c3c)
     await ctx.reply(embed=embed, mention_author=False)
   else:
     movie_id = json_data['results'][0]['id']
@@ -401,7 +403,7 @@ async def corona(ctx, *, country : str = ''):
   json_data = json.loads(response.text)
   if json_data['results'] == 0:
     await ctx.message.add_reaction('❌')
-    embed = discord.Embed(description=':rolling_eyes: - {} I can\'t find **{}**!'.format(ctx.author.name, country), color=0xe74c3c)
+    embed = discord.Embed(description=':rolling_eyes: - {} I can\'t find a country named **{}**!'.format(ctx.author.name, country), color=0xe74c3c)
     await ctx.reply(embed=embed, mention_author=False)
   else:
     country = json_data['response'][0]['country']
