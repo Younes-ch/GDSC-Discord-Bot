@@ -21,7 +21,7 @@ cmds = [
   {
     'name' : 'meme',  
     'args' : '[subreddit name]',
-    'dis' : 'Returns a random picture from the subbredit you provided or Dankmemes/memes/me_irl (in case no Subbredit name was provided).'
+    'dis' : 'Returns a random meme from the subbredit you provided or Dankmemes/memes/me_irl (in case no Subbredit name was provided).'
   },
   { 
     'name' : 'weather',  
@@ -76,12 +76,12 @@ cmds = [
   {
     "name" : 'userinfo', 
     'args' : '[member]',
-    'dis' : 'Shows some details about the mentioned member or the user in case no one was mentioned.'
+    'dis' : 'Shows detailed information about the mentioned member or the user in case no one was mentioned.'
   },
   {
     "name" : 'serverinfo', 
     'args' : '',
-    'dis' : 'Shows some details about the server where the command was called.'
+    'dis' : 'Shows detailed information about the server where the command was called.'
   },
   {
     "name" : 'help', 
@@ -99,11 +99,6 @@ async def on_ready():
   print('------')
 
 
-def generate_embed(*title, description, color = 0x70e68a, author) -> discord.Embed:
-  embed = discord.Embed(title=title, description=description, color = color)
-  embed.set_footer(text='Requested by {}'.format(author), icon_url=author.avatar_url)
-
-  return embed
 
 
 def get_random_quote():
@@ -132,7 +127,96 @@ async def help(ctx):
   await ctx.send(embed=embed)
 
 
-#@help.command()
+
+def generate_embed(title, description, author, fields : dict, color = 0x70e68a) -> discord.Embed:
+  embed = discord.Embed(title=title, description=description, color = color)
+  embed.add_field(name='Usage:', value="\n".join(fields['usage']))
+  embed.add_field(name='Examples:', value="\n".join(fields['examples']))
+  embed.set_footer(text='Requested by {}'.format(author), icon_url=author.avatar_url)
+
+  return embed
+
+  
+@help.command()
+async def avatar(ctx):
+  embed = generate_embed('Avatar', 'Returns the avatar of the member mentioned or the user who called the command (in case no one was mentioned).', ctx.author, {'usage' : ['&avatar', '&avatar server', '&avatar [user]'], 'examples' : ['&avatar', '&avatar server', '&avatar {}'.format(ctx.author.mention), '&avatar 196605500488384512']})
+  await ctx.send(embed=embed)
+
+
+@help.command()
+async def meme(ctx):
+  embed = generate_embed('Meme', 'Returns a random meme from the subbredit you provided or Dankmemes/memes/me_irl (in case no Subbredit name was provided).', ctx.author, {'usage' : ['&meme', '&meme [subreddit name]'], 'examples' : ['&meme', '&meme me_irl']})
+  await ctx.send(embed=embed)
+
+
+@help.command()
+async def weather(ctx):
+  embed = generate_embed('Weather', 'Returns current weather in the city mentioned or Sousse if no city was mentioned.', ctx.author, {'usage' : ['&weather', '&weather [city name]'], 'examples' : ['&weather', '&weather Monastir']})
+  await ctx.send(embed=embed)
+
+
+@help.command()
+async def say(ctx):
+  embed = generate_embed('Say', 'Sends the message that the user provided as the bot.', ctx.author, {'usage' : ['&say [message]'], 'examples' : ['&say Hello World!']})
+  await ctx.send(embed=embed)
+
+
+@help.command()
+async def fact(ctx):
+  embed = generate_embed('Fact', 'Return a random fact', ctx.author, {'usage' : ['&fact'], 'examples' : ['&say']})
+  await ctx.send(embed=embed)
+
+
+@help.command()
+async def corona(ctx):
+  embed = generate_embed('Corona', 'Returns today''s COVID-19 statistics of the mentioned country (Tunisia if none was mentioned).', ctx.author, {'usage' : ['&corona', '&corona [country name]'], 'examples' : ['&corona', '&corona Morocco']})
+  await ctx.send(embed=embed)
+
+
+@help.command()
+async def snipe(ctx):
+  embed = generate_embed('Snipe (Certain Permission are Required)', 'Returns last deleted messages in the channel where the command was called.', ctx.author, {'usage' : ['&snipe'], 'examples' : ['&snipe']})
+  await ctx.send(embed=embed)
+
+
+@help.command()
+async def rps(ctx):
+  embed = generate_embed('RPS', 'Creates a RPS game between you and the mentioned member.', ctx.author, {'usage' : ['&rps [member]'], 'examples' : ['&rps {0.mention}'.format(ctx.author), '&rps 195605500488384512']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def joke(ctx):
+  embed = generate_embed('Joke', 'Returns a random joke contains the word (word argument can be omitted).', ctx.author, {'usage' : ['&joke', '&joke [word]'], 'examples' : ['&joke', '&joke christmas']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def movie(ctx):
+  embed = generate_embed('Movie', 'Returns detailed information about the movie/serie mentioned.', ctx.author, {'usage' : ['&movie [movie/serie name]'], 'examples' : ['&movie Red Notice', '&movie Breaking Bad']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def ping(ctx):
+  embed = generate_embed('Ping', 'Returns Bot\'s current client ping.', ctx.author, {'usage' : ['&ping'], 'examples' : ['&ping']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def quote(ctx):
+  embed = generate_embed('Quote', 'Returns a random quote.', ctx.author, {'usage' : ['&quote'], 'examples' : ['&quote']})
+  await ctx.send(embed=embed)
+
+
+@help.command()
+async def userinfo(ctx):
+  embed = generate_embed('User Info', 'Shows detailed information about the mentioned member or the user in case no one was mentioned.', ctx.author, {'usage' : ['&userinfo', '&userinfo [member]'], 'examples' : ['&userinfo', '&userinfo {0.mention}'.format(ctx.author), '&userinfo 195605500488384512']})
+  await ctx.send(embed=embed)
+
+
+
+@help.command()
+async def serverinfo(ctx):
+  embed = generate_embed('Server Info', 'Shows detailed information about the server where the command was called.', ctx.author, {'usage' : ['&serverinfo'], 'examples' : ['&serverinfo']})
+  await ctx.send(embed=embed)
+
 
 #Server Info Command
 @bot.command(name='serverinfo')
