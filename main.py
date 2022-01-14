@@ -458,6 +458,16 @@ async def avatar(ctx, *, member : str = ''):
       embed.set_footer(text='Requested by {}'.format(ctx.author),
       icon_url=ctx.author.avatar_url)
       await ctx.reply(embed = embed, mention_author=False)
+    elif member == 'server':
+      embed = discord.Embed(title="Avatar Link",
+      url=ctx.guild.icon_url,
+      color=ctx.author.top_role.color)
+      embed.set_author(name=ctx.guild.name,
+      icon_url=ctx.guild.icon_url)
+      embed.set_image(url=ctx.guild.icon_url_as(format='gif') if ctx.guild.is_icon_animated() else ctx.guild.icon_url_as(format='png'))
+      embed.set_footer(text='Requested by {}'.format(ctx.author),
+      icon_url=ctx.author.avatar_url)
+      await ctx.reply(embed = embed, mention_author=False)
     elif not ctx.guild.get_member_named(member):
       await ctx.message.add_reaction('❌')
       embed = discord.Embed(description=':rolling_eyes: - {} I can\'t find **{}**!'.format(ctx.author.name, member), color=0xe74c3c)
