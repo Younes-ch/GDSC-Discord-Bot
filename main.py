@@ -1,4 +1,5 @@
 import discord
+from discord.abc import PrivateChannel
 from discord.ext import commands
 import os
 import requests
@@ -79,6 +80,22 @@ cmds = [
   }
 ]
 
+@bot.event
+async def on_ready():
+  print('------')
+  print('Logged in as')
+  print(bot.user.name)
+  print(bot.user.id)
+  print('------')
+
+
+def generate_embed(*title, description, color = 0x70e68a, author) -> discord.Embed:
+  embed = discord.Embed(title=title, description=description, color = color)
+  embed.set_footer(text='Requested by {}'.format(author), icon_url=author.avatar_url)
+
+  return embed
+
+
 def get_random_quote():
   response = requests.get('https://zenquotes.io/api/random')
   json_data = json.loads(response.text)
@@ -103,6 +120,71 @@ async def help(ctx):
     embed.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
     
   await ctx.send(embed=embed)
+
+
+#@help.command()
+
+#Server Info Command
+@bot.command(name='serverinfo')
+async def server_info(ctx):
+  guild_title ='Info for {}'.format(ctx.guild.name)
+  guild_text_channels = len(ctx.guild.text_channels)
+  guild_voice_channels = len(ctx.guild.voice_channels)
+  guild_member_count = ctx.guild.member_count
+  guild_human_members = len([x for x in ctx.guild.members if not x.bot])
+  guild_bot_members = guild_member_count - guild_human_members
+  guild_verification_level = ctx.guild.verification_level
+  guild_voice_region = ctx.guild.region
+  guild_roles_count = len(ctx.guild.roles)
+  guild_highest_role = ctx.guild.roles[-1].mention
+  footer_text ='Guild ID: {}'.format(ctx.guild.id)
+  embed = discord.Embed(title=guild_title, color=ctx.author.top_role.color)
+  embed.add_field(name='Member Count:', value=f'Total: {guild_member_count}\nHumans: {guild_human_members}\nBots: {guild_bot_members}')
+  embed.add_field(name='Channels:', value=f'Text: {guild_text_channels}\nVoice: {guild_voice_channels}')
+  embed.add_field(name='Info:', value=f'Verification level: {guild_verification_level}\nVoice region: {guild_voice_region}')
+  embed.add_field(name='Description:', value=ctx.guild.description)
+  embed.add_field(name='Highest Role:', value=f'{guild_highest_role}')
+  embed.add_field(name='Roles:', value=f'{guild_roles_count}')
+  embed.set_thumbnail(url=ctx.guild.icon_url)
+  embed.set_footer(text=f'{footer_text} • Created at: {ctx.guild.created_at.strftime("%d-%b-%Y")}')
+  await ctx.reply(embed=embed, mention_author=False)
+
+
+#User info command
+@bot.command(name='userinfo')
+async def user_info(ctx, *, member : discord.Member = None):
+  if member:
+    embed = discord.Embed(title='User info: - {}'.format(member), color=member.top_role.color)
+    embed.add_field(name='ID:', value=member.id)
+    embed.add_field(name='Guild name:', value=ctx.guild.name)
+    embed.add_field(name='Created at:', value=member.created_at.strftime("%d-%b-%Y"))
+    embed.add_field(name='Joined at:', value=member.joined_at.strftime("%d-%b-%Y"))
+    embed.add_field(name='Roles:', value="\n".join([x.mention for x in member.roles]))
+    embed.add_field(name='Top Role:', value=member.top_role.mention)
+    embed.add_field(name='Is Bot:', value='Yes' if member.bot else 'No')
+    embed.set_thumbnail(url=member.avatar_url)
+    embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
+    await ctx.reply(embed=embed, mention_author=False)
+  else:
+    member = ctx.author
+    embed = discord.Embed(title='User info: - {}'.format(member), color=member.top_role.color)
+    embed.add_field(name='ID:', value=member.id)
+    embed.add_field(name='Guild name:', value=ctx.guild.name)
+    embed.add_field(name='Created at:', value=member.created_at.strftime("%d-%b-%Y"))
+    embed.add_field(name='Joined at:', value=member.joined_at.strftime("%d-%b-%Y"))
+    embed.add_field(name='Roles:', value="\n".join([x.mention for x in member.roles]))
+    embed.add_field(name='Top Role:', value=member.top_role.mention)
+    embed.add_field(name='Is Bot:', value='Yes' if member.bot else 'No')
+    embed.set_thumbnail(url=member.avatar_url)
+    embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
+    await ctx.reply(embed=embed, mention_author=False)
+
+@user_info.error
+async def user_info_error(ctx, error : commands.CommandError):
+  if isinstance(error, commands.MemberNotFound):
+    embed = discord.Embed(title='Member Not Found Error',description=f':rolling_eyes: - {ctx.author.name}, I can\'t find **{" ".join(ctx.message.content.split()[1:])}**', color=0xe74c3c)
+    await ctx.message.add_reaction('❌')
+    await ctx.send(embed=embed)
 
 #weather command
 @bot.command()
@@ -167,14 +249,6 @@ async def fact(ctx):
   embed.set_thumbnail(url='https://image.shutterstock.com/image-illustration/fun-facts-colorful-stripes-260nw-683840437.jpg')
   embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar_url)
   await ctx.reply(embed=embed, mention_author=False)
-
-@bot.event
-async def on_ready():
-  print('------')
-  print('Logged in as')
-  print(bot.user.name)
-  print(bot.user.id)
-  print('------')
 
 #rps command
 @bot.command()
@@ -347,10 +421,10 @@ async def snipe(ctx : commands.Context):
   else:
     embed = discord.Embed(title=f'There are {len(deleted_messages_in_this_channel)} messages deleted:', color=0xe74c3c)
     for msg in deleted_messages_in_this_channel:
-        full_date = str(msg.created_at)[:-7]
+        full_date = msg.created_at.strftime("%d-%b-%Y %X")
         splitted_date = full_date.split()
         joined_date = ' • '.join(splitted_date)
-        embed.add_field(name=f'Message deleted by {msg.author} in `{msg.channel.name}`:', value=f':e_mail: - {msg.content}!\n{joined_date}', inline=False)
+        embed.add_field(name=f'Message deleted by {msg.author} in `{msg.channel.name}`:', value=f':e_mail: - **{msg.content}**!\n{joined_date}', inline=False)
     embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar_url)
     await ctx.reply(embed=embed, mention_author=False)
 
@@ -455,6 +529,16 @@ async def avatar(ctx, *, member : str = ''):
       embed.set_author(name=member,
       icon_url=member.avatar_url)
       embed.set_image(url=member.avatar_url_as(format='gif') if member.is_avatar_animated() else member.avatar_url_as(format='png'))
+      embed.set_footer(text='Requested by {}'.format(ctx.author),
+      icon_url=ctx.author.avatar_url)
+      await ctx.reply(embed = embed, mention_author=False)
+    elif member == 'server':
+      embed = discord.Embed(title="Avatar Link",
+      url=ctx.guild.icon_url,
+      color=ctx.author.top_role.color)
+      embed.set_author(name=ctx.guild.name,
+      icon_url=ctx.guild.icon_url)
+      embed.set_image(url=ctx.guild.icon_url_as(format='gif') if ctx.guild.is_icon_animated() else ctx.guild.icon_url_as(format='png'))
       embed.set_footer(text='Requested by {}'.format(ctx.author),
       icon_url=ctx.author.avatar_url)
       await ctx.reply(embed = embed, mention_author=False)
