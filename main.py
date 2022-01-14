@@ -74,6 +74,16 @@ cmds = [
     'dis' : 'Returns a random quote.'
   },
   {
+    "name" : 'userinfo', 
+    'args' : '[member]',
+    'dis' : 'Shows some details about the mentioned member or the user in case no one was mentioned.'
+  },
+  {
+    "name" : 'serverinfo', 
+    'args' : '',
+    'dis' : 'Shows some details about the server where the command was called.'
+  },
+  {
     "name" : 'help', 
     'args' : '',
     'dis' : 'Shows this message.'
@@ -182,7 +192,7 @@ async def user_info(ctx, *, member : discord.Member = None):
 @user_info.error
 async def user_info_error(ctx, error : commands.CommandError):
   if isinstance(error, commands.MemberNotFound):
-    embed = discord.Embed(title='Member Not Found Error',description=f':rolling_eyes: - {ctx.author.name}, I can\'t find **{" ".join(ctx.message.content.split()[1:])}**', color=0xe74c3c)
+    embed = discord.Embed(title='Member Not Found Error',description=f':rolling_eyes: - {ctx.author.name}, I can\'t find **{" ".join(ctx.message.content.split()[1:])}**!', color=0xe74c3c)
     await ctx.message.add_reaction('❌')
     await ctx.send(embed=embed)
 
