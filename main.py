@@ -97,7 +97,20 @@ async def on_ready():
   print(bot.user.id)
   print('------')
 
-
+@bot.event
+async def on_member_join(member):
+  for channel in member.guild.channels:
+    if channel.name.startswith('Member'):
+      await channel.edit(name='Members: {}'.format(member.guild.member_count))
+  welcome_channel = None
+  for channel in member.guild.text_channels:
+    if channel.name == "welcome-room":
+      welcome_channel = channel
+      break
+  if welcome_channel:
+    await channel.send('Welcome!')
+  else:
+    await member.guild.owner.send(':rolling_eyes: - Please create a **`text-channel`** named **`welcome-room`** so i can display welcome messages.')
 
 
 def get_random_quote():
