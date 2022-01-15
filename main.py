@@ -1,5 +1,4 @@
 import discord
-from discord.abc import PrivateChannel
 from discord.ext import commands
 import os
 import requests
@@ -85,8 +84,8 @@ cmds = [
   },
   {
     "name" : 'help', 
-    'args' : '',
-    'dis' : 'Shows this message.'
+    'args' : '[command]',
+    'dis' : 'Shows this message if no command was provided.'
   }
 ]
 
