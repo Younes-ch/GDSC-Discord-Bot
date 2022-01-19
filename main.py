@@ -260,11 +260,10 @@ async def user_info(ctx, *, member : discord.Member = None):
   }
   if not member:
     member = ctx.author
-
   embed = discord.Embed(title='User information:', color = member.top_role.color)
   embed.add_field(name='Name', value=member)
   embed.add_field(name='ID', value=member.id)
-  embed.add_field(name='Roles', value="\n".join([x.mention for x in member.roles if x.name != '@everyone']))
+  embed.add_field(name='Roles', value="\n".join([x.mention for x in member.roles if x.name != '@everyone']) if len(member.roles) > 1 else 'N/A')
   embed.add_field(name='Bot?', value='✅' if member.bot else '❌')
   embed.add_field(name='Booster', value=member.premium_since.strftime("%d-%b-%Y") if member.premium_since else '❌')
   embed.add_field(name='Status', value=statuses[str(member.status)])
@@ -278,9 +277,10 @@ async def user_info(ctx, *, member : discord.Member = None):
 @user_info.error
 async def user_info_error(ctx, error : commands.CommandError):
   if isinstance(error, commands.MemberNotFound):
-    embed = discord.Embed(title='Member Not Found Error',description=f':rolling_eyes: - {ctx.author.name}, I can\'t find **{" ".join(ctx.message.content.split()[1:])}**!', color=0xe74c3c)
+    embed = discord.Embed(description=f':rolling_eyes: - {ctx.author.name}, I can\'t find **{" ".join(ctx.message.content.split()[1:])}**!', color=0xe74c3c)
     await ctx.message.add_reaction('❌')
     await ctx.send(embed=embed)
+    print(error)
 
 #weather command
 @bot.command()
