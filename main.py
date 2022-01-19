@@ -114,8 +114,10 @@ async def on_ready():
 async def on_guild_join(guild):
   guild_member_count = guild.member_count
   if not guild.id in [828940910053556224, 783404400416391189]:
-    await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)][0].delete()
-    await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because only work in `GDSC ISSATSo Community Server!`')
+    if [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)]:
+      print('entered!')
+      await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)][0].delete()
+    await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
     await guild.leave()
   else:
     if len(list(filter(lambda vc: vc.name == 'Members count: {}'.format(guild_member_count), guild.voice_channels))) == 0:
@@ -133,18 +135,14 @@ async def on_member_join(member):
 
 @bot.event
 async def on_member_remove(member):
-  new_guild_member_count = member.guild.member_count
-  await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
+  if member.id != bot.user.id:
+    new_guild_member_count = member.guild.member_count
+    await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
 
 @bot.event
-async def on_member_kick(member):
-  new_guild_member_count = member.guild.member_count
-  await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
-
-@bot.event
-async def on_member_ban(member):
-  new_guild_member_count = member.guild.member_count
-  await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
+async def on_member_ban(guild, member):
+  new_guild_member_count = guild.member_count
+  await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
 
 def get_random_quote():
   response = requests.get('https://zenquotes.io/api/random')
