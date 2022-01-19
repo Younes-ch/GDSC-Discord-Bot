@@ -7,7 +7,7 @@ import json
 import logging
 import asyncio
 
-intents = discord.Intents(messages=True, guilds=True, members=True, dm_reactions=True, reactions=True)
+intents = discord.Intents().all()
 logging.basicConfig(level=logging.INFO)
 bot = commands.Bot(command_prefix='&', intents=intents)
 bot.remove_command('help')
@@ -96,22 +96,6 @@ async def on_ready():
   print(bot.user.name)
   print(bot.user.id)
   print('------')
-
-@bot.event
-async def on_member_join(member):
-  for channel in member.guild.channels:
-    if channel.name.startswith('Member'):
-      await channel.edit(name='Members: {}'.format(member.guild.member_count))
-  welcome_channel = None
-  for channel in member.guild.text_channels:
-    if channel.name == "welcome-room":
-      welcome_channel = channel
-      break
-  if welcome_channel:
-    await channel.send('Welcome!')
-  else:
-    await member.guild.owner.send(':rolling_eyes: - Please create a **`text-channel`** named **`welcome-room`** so i can display welcome messages.')
-
 
 def get_random_quote():
   response = requests.get('https://zenquotes.io/api/random')
@@ -233,57 +217,63 @@ async def serverinfo(ctx):
 #Server Info Command
 @bot.command(name='serverinfo')
 async def server_info(ctx):
-  guild_title ='Info for {}'.format(ctx.guild.name)
+  guild_name =ctx.guild.name
   guild_text_channels = len(ctx.guild.text_channels)
   guild_voice_channels = len(ctx.guild.voice_channels)
+  guild_categories = len(ctx.guild.categories)
   guild_member_count = ctx.guild.member_count
   guild_human_members = len([x for x in ctx.guild.members if not x.bot])
   guild_bot_members = guild_member_count - guild_human_members
-  guild_verification_level = ctx.guild.verification_level
-  guild_voice_region = ctx.guild.region
+  guild_banned_members = len(await ctx.guild.bans())
+  guild_region = ctx.guild.region
+  guild_member_statuses = f'🟢 {len(list(filter(lambda m: str(m.status) == "online", ctx.guild.members)))} 🟠 {len(list(filter(lambda m: str(m.status) == "idle", ctx.guild.members)))} 🔴 {len(list(filter(lambda m: str(m.status) == "dnd", ctx.guild.members)))} ⚪ {len(list(filter(lambda m: str(m.status) == "offline", ctx.guild.members)))}'
   guild_roles_count = len(ctx.guild.roles)
   guild_highest_role = ctx.guild.roles[-1].mention
-  footer_text ='Guild ID: {}'.format(ctx.guild.id)
-  embed = discord.Embed(title=guild_title, color=ctx.author.top_role.color)
-  embed.add_field(name='Member Count:', value=f'Total: {guild_member_count}\nHumans: {guild_human_members}\nBots: {guild_bot_members}')
-  embed.add_field(name='Channels:', value=f'Text: {guild_text_channels}\nVoice: {guild_voice_channels}')
-  embed.add_field(name='Info:', value=f'Verification level: {guild_verification_level}\nVoice region: {guild_voice_region}')
-  embed.add_field(name='Description:', value=ctx.guild.description)
+  footer_text ='Guild ID: {} • Created at: {}'.format(ctx.guild.id, ctx.guild.created_at.strftime("%d-%b-%Y"))
+  embed = discord.Embed(title='Server information', color=ctx.author.top_role.color)
+  embed.add_field(name='Name:', value=guild_name)
+  embed.add_field(name='Region:', value=guild_region)
+  embed.add_field(name='Members:', value=guild_member_count)
+  embed.add_field(name='Humans:', value=guild_human_members)
+  embed.add_field(name='Bots:', value=guild_bot_members)
+  embed.add_field(name='Banned:', value=guild_banned_members)
+  embed.add_field(name='Statuses:', value=guild_member_statuses)
+  embed.add_field(name='Text channels:', value=guild_text_channels)
+  embed.add_field(name='Voice channels:', value=guild_voice_channels)
+  embed.add_field(name='Categories:', value=guild_categories)
+  embed.add_field(name='Roles:', value=guild_roles_count)
   embed.add_field(name='Highest Role:', value=f'{guild_highest_role}')
-  embed.add_field(name='Roles:', value=f'{guild_roles_count}')
+  embed.add_field(name='Invites:', value=len(await ctx.guild.invites()))
   embed.set_thumbnail(url=ctx.guild.icon_url)
-  embed.set_footer(text=f'{footer_text} • Created at: {ctx.guild.created_at.strftime("%d-%b-%Y")}')
+  embed.set_footer(text=footer_text)
   await ctx.reply(embed=embed, mention_author=False)
 
 
 #User info command
 @bot.command(name='userinfo')
 async def user_info(ctx, *, member : discord.Member = None):
-  if member:
-    embed = discord.Embed(title='User info: - {}'.format(member), color=member.top_role.color)
-    embed.add_field(name='ID:', value=member.id)
-    embed.add_field(name='Guild name:', value=ctx.guild.name)
-    embed.add_field(name='Created at:', value=member.created_at.strftime("%d-%b-%Y"))
-    embed.add_field(name='Joined at:', value=member.joined_at.strftime("%d-%b-%Y"))
-    embed.add_field(name='Roles:', value="\n".join([x.mention for x in member.roles]))
-    embed.add_field(name='Top Role:', value=member.top_role.mention)
-    embed.add_field(name='Is Bot:', value='Yes' if member.bot else 'No')
-    embed.set_thumbnail(url=member.avatar_url)
-    embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
-    await ctx.reply(embed=embed, mention_author=False)
-  else:
+  statuses = {
+    'online' : '🟢 Online',
+    'idle' : '🟠 Idle',
+    'dnd' : '🔴 Do not Disturb',
+    'offline' : '⚪ Offline'
+  }
+  if not member:
     member = ctx.author
-    embed = discord.Embed(title='User info: - {}'.format(member), color=member.top_role.color)
-    embed.add_field(name='ID:', value=member.id)
-    embed.add_field(name='Guild name:', value=ctx.guild.name)
-    embed.add_field(name='Created at:', value=member.created_at.strftime("%d-%b-%Y"))
-    embed.add_field(name='Joined at:', value=member.joined_at.strftime("%d-%b-%Y"))
-    embed.add_field(name='Roles:', value="\n".join([x.mention for x in member.roles]))
-    embed.add_field(name='Top Role:', value=member.top_role.mention)
-    embed.add_field(name='Is Bot:', value='Yes' if member.bot else 'No')
-    embed.set_thumbnail(url=member.avatar_url)
-    embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
-    await ctx.reply(embed=embed, mention_author=False)
+
+  embed = discord.Embed(title='User information:', color = member.top_role.color)
+  embed.add_field(name='Name', value=member)
+  embed.add_field(name='ID', value=member.id)
+  embed.add_field(name='Roles', value="\n".join([x.mention for x in member.roles if x.name != '@everyone']))
+  embed.add_field(name='Bot?', value='✅' if member.bot else '❌')
+  embed.add_field(name='Booster', value=member.premium_since.strftime("%d-%b-%Y") if member.premium_since else '❌')
+  embed.add_field(name='Status', value=statuses[str(member.status)])
+  embed.add_field(name='Activity', value=str(member.activity.name).title() if member.activity else 'N/A')
+  embed.add_field(name='Created at', value=member.created_at.strftime("%d-%b-%Y"))
+  embed.add_field(name='Joined at', value=member.joined_at.strftime("%d-%b-%Y"))
+  embed.set_thumbnail(url=member.avatar_url)
+  embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
+  await ctx.reply(embed=embed, mention_author=False)
 
 @user_info.error
 async def user_info_error(ctx, error : commands.CommandError):
