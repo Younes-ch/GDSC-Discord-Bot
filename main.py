@@ -96,6 +96,55 @@ async def on_ready():
   print(bot.user.name)
   print(bot.user.id)
   print('------')
+  for guild in bot.guilds:
+    guild_member_count = guild.member_count
+    if not guild.id in [828940910053556224, 783404400416391189]:
+      await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)][0].delete()
+      await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because only work in `GDSC ISSATSo Community Server!`')
+      await guild.leave()
+    else:
+      if len(list(filter(lambda vc: vc.name == 'Members count: {}'.format(guild_member_count), guild.voice_channels))) == 0:
+        overwrites = {
+          guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
+          guild.me: discord.PermissionOverwrite(view_channel=True, connect=False)
+        }
+        await guild.create_voice_channel(name='Members count: {}'.format(guild_member_count), position=0, user_limit=0, overwrites=overwrites)
+
+@bot.event
+async def on_guild_join(guild):
+  guild_member_count = guild.member_count
+  if not guild.id in [828940910053556224, 783404400416391189]:
+    await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)][0].delete()
+    await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because only work in `GDSC ISSATSo Community Server!`')
+    await guild.leave()
+  else:
+    if len(list(filter(lambda vc: vc.name == 'Members count: {}'.format(guild_member_count), guild.voice_channels))) == 0:
+      overwrites = {
+        guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
+        guild.me: discord.PermissionOverwrite(view_channel=True, connect=False)
+      }
+      await guild.create_voice_channel(name='Members count: {}'.format(guild_member_count), position=0, user_limit=0, overwrites=overwrites)
+
+
+@bot.event
+async def on_member_join(member):
+  new_guild_member_count = member.guild.member_count
+  await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count-1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
+
+@bot.event
+async def on_member_remove(member):
+  new_guild_member_count = member.guild.member_count
+  await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
+
+@bot.event
+async def on_member_kick(member):
+  new_guild_member_count = member.guild.member_count
+  await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
+
+@bot.event
+async def on_member_ban(member):
+  new_guild_member_count = member.guild.member_count
+  await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
 
 def get_random_quote():
   response = requests.get('https://zenquotes.io/api/random')
