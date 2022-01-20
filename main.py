@@ -105,7 +105,7 @@ async def member_count():
         break
     if not found:
       await guild.create_voice_channel(name='Member count: {}'.format(guild.member_count), overwrites=overwrites, position=0, user_limit=0)
-    
+  print('Updated')  
 member_count.start()
 
 @bot.event
@@ -117,18 +117,13 @@ async def on_ready():
   print(bot.user.id)
   print('------')
   for guild in bot.guilds:
-    guild_member_count = guild.member_count
     if not guild.id in [828940910053556224, 783404400416391189]:
-      await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)][0].delete()
-      await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because only work in `GDSC ISSATSo Community Server!`')
+      await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
       await guild.leave()
 
 @bot.event
 async def on_guild_join(guild):
-  guild_member_count = guild.member_count
   if not guild.id in [828940910053556224, 783404400416391189]:
-    if [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)]:
-      await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)][0].delete()
     await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
     await guild.leave()
 
