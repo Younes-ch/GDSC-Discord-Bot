@@ -139,13 +139,15 @@ async def help(ctx):
     counter += 1
     if counter <= 5:
       embed1.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
-    elif counter <= 10:
+    elif counter > 5 and counter <= 10:
       embed2.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
     else:
       embed3.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
 
-
-  listOfEmbeds = [embed1, embed2, embed3]  
+  await ctx.send(embed=embed1)
+  await ctx.send(embed=embed2)
+  await ctx.send(embed=embed3)
+  """listOfEmbeds = [embed1, embed2, embed3]  
   check = lambda r, u: u.id == ctx.author.id and str(r.emoji) in "⏮️⏭️"
   message = await ctx.send(embed=embed1)
   await message.add_reaction("⏮️") 
@@ -169,7 +171,7 @@ async def help(ctx):
       current = len(listOfEmbeds) - 1
 
     embed = listOfEmbeds[current]
-    await message.edit(embed=embed)  
+    await message.edit(embed=embed)  """
   
 
 def generate_embed(title, description, author, fields : dict, color = 0x70e68a) -> discord.Embed:
@@ -207,7 +209,7 @@ async def say(ctx):
 
 @help.command()
 async def fact(ctx):
-  embed = generate_embed('Fact', 'Return a random fact', ctx.author, {'usage' : ['&fact'], 'examples' : ['&say']})
+  embed = generate_embed('Fact', 'Return a random fact', ctx.author, {'usage' : ['&fact'], 'examples' : ['&fact']})
   await ctx.send(embed=embed)
 
 
