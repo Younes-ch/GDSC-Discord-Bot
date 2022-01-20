@@ -102,13 +102,6 @@ async def on_ready():
       await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)][0].delete()
       await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because only work in `GDSC ISSATSo Community Server!`')
       await guild.leave()
-    else:
-      if len(list(filter(lambda vc: vc.name == 'Members count: {}'.format(guild_member_count), guild.voice_channels))) == 0:
-        overwrites = {
-          guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
-          guild.me: discord.PermissionOverwrite(view_channel=True, connect=False)
-        }
-        await guild.create_voice_channel(name='Members count: {}'.format(guild_member_count), position=0, user_limit=0, overwrites=overwrites)
 
 @bot.event
 async def on_guild_join(guild):
@@ -118,52 +111,6 @@ async def on_guild_join(guild):
       await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(guild_member_count)][0].delete()
     await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
     await guild.leave()
-  else:
-    if len(list(filter(lambda vc: vc.name == 'Members count: {}'.format(guild_member_count), guild.voice_channels))) == 0:
-      overwrites = {
-        guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
-        guild.me: discord.PermissionOverwrite(view_channel=True, connect=False)
-      }
-      await guild.create_voice_channel(name='Members count: {}'.format(guild_member_count), position=0, user_limit=0, overwrites=overwrites)
-
-
-@bot.event
-async def on_member_join(member):
-  new_guild_member_count = member.guild.member_count
-  if len(list(filter(lambda vc: vc.name == 'Members count: {}'.format(new_guild_member_count-1), member.guild.voice_channels))) == 0:
-    overwrites = {
-      member.guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
-      member.guild.me: discord.PermissionOverwrite(view_channel=True, connect=False)
-    }
-    await member.guild.create_voice_channel(name='Members count: {}'.format(new_guild_member_count), position=0, user_limit=0, overwrites=overwrites)
-  else:
-    await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count-1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
-
-@bot.event
-async def on_member_remove(member):
-  if member.id != bot.user.id:
-    new_guild_member_count = member.guild.member_count
-    if len(list(filter(lambda vc: vc.name == 'Members count: {}'.format(new_guild_member_count+1), member.guild.voice_channels))) == 0:
-      overwrites = {
-        member.guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
-        member.guild.me: discord.PermissionOverwrite(view_channel=True, connect=False)
-      }
-      await member.guild.create_voice_channel(name='Members count: {}'.format(new_guild_member_count), position=0, user_limit=0, overwrites=overwrites)
-    else:
-      await [vc for vc in member.guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
-
-@bot.event
-async def on_member_ban(guild, member):
-  new_guild_member_count = guild.member_count
-  await guild.owner.send(f'Old: {guild.member_count}, New: {new_guild_member_count}')
-  if len(list(filter(lambda vc: vc.name == 'Members count: {}'.format(new_guild_member_count+1), member.guild.voice_channels))) == 0:
-    overwrites = {
-      member.guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
-      member.guild.me: discord.PermissionOverwrite(view_channel=True, connect=False)
-    }
-    await member.guild.create_voice_channel(name='Members count: {}'.format(new_guild_member_count), position=0, user_limit=0, overwrites=overwrites)
-  else:
-    await [vc for vc in guild.voice_channels if vc.name == 'Members count: {}'.format(new_guild_member_count+1)][0].edit(name='Members count: {}'.format(new_guild_member_count))
 
 def get_random_quote():
   response = requests.get('https://zenquotes.io/api/random')
@@ -335,7 +282,7 @@ async def user_info(ctx, *, member : discord.Member = None):
   embed.add_field(name='Bot?', value='✅' if member.bot else '❌')
   embed.add_field(name='Booster', value=member.premium_since.strftime("%d-%b-%Y") if member.premium_since else '❌')
   embed.add_field(name='Status', value=statuses[str(member.status)])
-  embed.add_field(name='Activity', value=str(member.activity.name).title() if member.activity else 'N/A')
+  embed.add_field(name='Activity', value=f'{str(member.activity.type).split(".")[-1].title()} **{str(member.activity.name).title()}**!' if member.activity else 'N/A')
   embed.add_field(name='Created at', value=member.created_at.strftime("%d-%b-%Y"))
   embed.add_field(name='Joined at', value=member.joined_at.strftime("%d-%b-%Y"))
   embed.set_thumbnail(url=member.avatar_url)
