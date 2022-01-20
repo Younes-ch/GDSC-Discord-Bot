@@ -128,16 +128,49 @@ def get_random_fact():
 #help command
 @bot.group(invoke_without_command=True)
 async def help(ctx):
-  embed = discord.Embed(title='Commands:', color=0x70e68a)
-  embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
-  embed.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
+  embed1 = discord.Embed(title='Commands:', color=0x70e68a)
+  embed1.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
+  embed1.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
+  embed2 = embed1
+  embed3 = embed1
   global cmds
+  counter = 0
   for cmd in cmds:
-    embed.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
-    
-  await ctx.send(embed=embed)
+    counter += 1
+    if counter <= 5:
+      embed1.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
+    elif counter <= 10:
+      embed2.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
+    else:
+      embed3.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
 
 
+  listOfEmbeds = [embed1, embed2, embed3]  
+  check = lambda r, u: u.id == ctx.author.id and str(r.emoji) in "⏮️⏭️"
+  message = await ctx.send(embed=embed1)
+  await message.add_reaction("⏮️") 
+  await message.add_reaction("⏭️")
+  while True:
+    try:
+      reaction, user = await bot.wait_for("reaction_add", check=check, timeout=10)
+    except asyncio.TimeoutError:
+        await message.clear_reactions()
+        break
+    current = 0
+
+    if str(reaction.emoji) == "⏮️":
+      current -= 1
+    elif str(reaction.emoji) == "️️⏭️":
+      current += 1
+
+    if current >= len(listOfEmbeds):
+      current = 0
+    elif current < 0:
+      current = len(listOfEmbeds) - 1
+
+    embed = listOfEmbeds[current]
+    await message.edit(embed=embed)  
+  
 
 def generate_embed(title, description, author, fields : dict, color = 0x70e68a) -> discord.Embed:
   embed = discord.Embed(title=title, description=description, color = color)
