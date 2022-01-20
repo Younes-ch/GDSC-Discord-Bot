@@ -392,7 +392,7 @@ async def user_info(ctx, *, member : discord.Member = None):
   embed.add_field(name='Bot?', value='✅' if member.bot else '❌')
   embed.add_field(name='Booster', value=member.premium_since.strftime("%d-%b-%Y") if member.premium_since else '❌')
   embed.add_field(name='Status', value=statuses[str(member.status)])
-  embed.add_field(name='Activity', value=f'{str(member.activity.type).split(".")[-1].title()} **{str(member.activity.name).title()}**!' if member.activity else 'N/A')
+  embed.add_field(name='Activity', value=f'{str(member.activity.type).split(".")[-1].title()} **{str(member.activity.name)}**!' if member.activity else 'N/A')
   embed.add_field(name='Created at', value=member.created_at.strftime("%d-%b-%Y"))
   embed.add_field(name='Joined at', value=member.joined_at.strftime("%d-%b-%Y"))
   embed.set_thumbnail(url=member.avatar_url)
