@@ -1,6 +1,7 @@
 import discord
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 from discord.ext import commands
+from discord.ext import tasks
 import os
 import requests
 import json
@@ -89,6 +90,23 @@ cmds = [
     'dis' : 'Shows this message if no command was provided.'
   }
 ]
+
+@tasks.loop(minutes=10)
+async def member_count():
+  for guild in bot.guilds:
+    overwrites = {
+      guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False)
+    }
+    found = False
+    for vc in guild.voice_channels:
+      if vc.name.startswith('Member count:'):
+        await vc.edit(name='Member count: {}'.format(guild.member_count), overwrites=overwrites, user_limit=0, position=0)
+        found = True
+        break
+    if not found:
+      await guild.create_voice_channel(name='Member count: {}'.format(guild.member_count), overwrites=overwrites, position=0, user_limit=0)
+    
+member_count.start()
 
 @bot.event
 async def on_ready():
@@ -343,7 +361,7 @@ async def server_info(ctx):
   footer_text ='Guild ID: {} • Created at: {}'.format(ctx.guild.id, ctx.guild.created_at.strftime("%d-%b-%Y"))
   embed = discord.Embed(title='Server information', color=ctx.author.top_role.color)
   embed.add_field(name='Name:', value=guild_name)
-  embed.add_field(name='Region:', value=guild_region)
+  embed.add_field(name='Avatar:', value="[Click Here]({})".format(ctx.guild.icon_url))
   embed.add_field(name='Members:', value=guild_member_count)
   embed.add_field(name='Humans:', value=guild_human_members)
   embed.add_field(name='Bots:', value=guild_bot_members)
@@ -355,6 +373,7 @@ async def server_info(ctx):
   embed.add_field(name='Roles:', value=guild_roles_count)
   embed.add_field(name='Highest Role:', value=f'{guild_highest_role}')
   embed.add_field(name='Invites:', value=len(await ctx.guild.invites()))
+  embed.add_field(name='Region:', value=guild_region)
   embed.set_thumbnail(url=ctx.guild.icon_url)
   embed.set_footer(text=footer_text)
   await ctx.reply(embed=embed, mention_author=False)
