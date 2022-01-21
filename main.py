@@ -260,7 +260,7 @@ def generate_embed(title, description, author, fields : dict, color = 0x70e68a) 
   
 @help.command()
 async def avatar(ctx):
-  embed = generate_embed('Avatar', 'Returns the avatar of the member mentioned or the user who called the command (in case no one was mentioned).', ctx.author, {'usage' : ['&avatar', '&avatar server', '&avatar [user]'], 'examples' : ['&avatar', '&avatar server', '&avatar {}'.format(ctx.author.mention), '&avatar 196605500488384512']})
+  embed = generate_embed('Avatar', 'Returns the avatar of the member mentioned or the user who called the command (in case no one was mentioned).', ctx.author, {'usage' : ['&avatar', '&avatar server', '&avatar [user]'], 'examples' : ['&avatar', '&avatar server', '&avatar {}'.format(ctx.author.mention)]})
   await ctx.send(embed=embed)
 
 
@@ -336,6 +336,11 @@ async def userinfo(ctx):
 @help.command()
 async def serverinfo(ctx):
   embed = generate_embed('Server Info', 'Shows detailed information about the server where the command was called.', ctx.author, {'usage' : ['&serverinfo'], 'examples' : ['&serverinfo']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def help(ctx):
+  embed = generate_embed('Help', 'Shows this message if no command was provided.', ctx.author, {'usage' : ['&help', '&help [command]'], 'examples' : ['&help', '&help avatar']})
   await ctx.send(embed=embed)
 
 
