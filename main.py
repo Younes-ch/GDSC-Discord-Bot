@@ -190,8 +190,8 @@ async def help(ctx):
       try:
         interaction = await bot.wait_for(
             "button_click",
-            check = lambda i: i.component.label in ["Prev", "Next"],
-            timeout = 10.0
+            check = lambda i: i.component.label in ["Prev", "Next"] and i.user.id == ctx.author.id,
+            timeout = 15.0
         )
         if interaction.component.label == "Prev":
             currentPage -= 1
