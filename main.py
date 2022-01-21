@@ -194,9 +194,9 @@ async def help(ctx):
             check = lambda i: i.component.label in ["Prev", "Next"],
             timeout = 15.0
         )
-        if interaction.component.label == "Prev":
+        if interaction.component.label == "Prev" and interaction.user.id == ctx.author.id:
             currentPage -= 1
-        elif interaction.component.label == "Next":
+        elif interaction.component.label == "Next" and interaction.user.id == ctx.author.id:
             currentPage += 1
         if currentPage == len(listOfEmbeds):
             currentPage = 0
