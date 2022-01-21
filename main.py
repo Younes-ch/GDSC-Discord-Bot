@@ -11,6 +11,7 @@ import asyncio
 
 intents = discord.Intents(members=True, guilds=True, bans=True, invites=True, messages=True, guild_messages=True, dm_reactions=True, emojis=True, dm_messages=True, reactions=True, presences=True)
 logging.basicConfig(level=logging.INFO)
+activity = discord.Activity(type=discord.ActivityType.listening, name="&help")
 bot = commands.Bot(command_prefix='&', intents=intents)
 bot.remove_command('help')
 cmds = [
