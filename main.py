@@ -191,7 +191,7 @@ async def help(ctx):
       try:
         interaction = await bot.wait_for(
             "button_click",
-            check = lambda i: i.component.label in ["Prev", "Next"] and i.user.id == ctx.author.id,
+            check = lambda i: i.component.label in ["Prev", "Next"],
             timeout = 15.0
         )
         if interaction.component.label == "Prev":
@@ -202,28 +202,34 @@ async def help(ctx):
             currentPage = 0
         elif currentPage < 0:
             currentPage = len(listOfEmbeds) - 1
-
-        await interaction.respond(
-            type = InteractionType.UpdateMessage,
-            embed = listOfEmbeds[currentPage],
-            components = [
-                [
-                    Button(
-                        label = "Prev",
-                        style = ButtonStyle.green
-                    ),
-                    Button(
-                        label = f"Page {int(listOfEmbeds.index(listOfEmbeds[currentPage])) + 1}/{len(listOfEmbeds)}",
-                        style = ButtonStyle.grey,
-                        disabled = True
-                    ),
-                    Button(
-                        label = "Next",
-                        style = ButtonStyle.green
-                    )
-                ]
-            ]
+  
+        if interaction.component.label in ["Prev", "Next"] and interaction.user.id == ctx.author.id:
+          await interaction.respond(
+          type = InteractionType.UpdateMessage,
+          embed = listOfEmbeds[currentPage],
+          components = [
+              [
+                  Button(
+                      label = "Prev",
+                      style = ButtonStyle.green
+                  ),
+                  Button(
+                      label = f"Page {int(listOfEmbeds.index(listOfEmbeds[currentPage])) + 1}/{len(listOfEmbeds)}",
+                      style = ButtonStyle.grey,
+                      disabled = True
+                  ),
+                  Button(
+                      label = "Next",
+                      style = ButtonStyle.green
+                  )
+              ]
+          ]
         )
+        else:
+          await interaction.respond(
+            type = InteractionType.ChannelMessageWithSource,
+            content = 'This is not your help command!',
+        )          
       except asyncio.TimeoutError:
         await message.edit(
             components = [
