@@ -359,6 +359,7 @@ async def server_info(ctx):
   guild_member_statuses = f'🟢 {len(list(filter(lambda m: str(m.status) == "online", ctx.guild.members)))} 🟠 {len(list(filter(lambda m: str(m.status) == "idle", ctx.guild.members)))} 🔴 {len(list(filter(lambda m: str(m.status) == "dnd", ctx.guild.members)))} ⚪ {len(list(filter(lambda m: str(m.status) == "offline", ctx.guild.members)))}'
   guild_roles_count = len(ctx.guild.roles)
   guild_highest_role = ctx.guild.roles[-1].mention
+  guild_description = ctx.guild.description if ctx.guild.description else 'N/A'
   footer_text ='Guild ID: {} • Created at: {}'.format(ctx.guild.id, ctx.guild.created_at.strftime("%d-%b-%Y"))
   embed = discord.Embed(title='Server information', color=ctx.author.top_role.color)
   embed.add_field(name='Name:', value=guild_name)
@@ -374,7 +375,8 @@ async def server_info(ctx):
   embed.add_field(name='Roles:', value=guild_roles_count)
   embed.add_field(name='Highest Role:', value=f'{guild_highest_role}')
   embed.add_field(name='Invites:', value=len(await ctx.guild.invites()))
-  embed.add_field(name='Region:', value=guild_region)
+  embed.add_field(name='Region:', value=guild_region, inline=False)
+  embed.add_field(name='Description:', value=guild_description)
   embed.set_thumbnail(url=ctx.guild.icon_url)
   embed.set_footer(text=footer_text)
   await ctx.reply(embed=embed, mention_author=False)
