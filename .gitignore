@@ -1,3 +1,4 @@
 *.lock
 *.toml
 *alive.py
+.env
