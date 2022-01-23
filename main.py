@@ -86,21 +86,6 @@ cmds = [
     'dis' : 'Shows detailed information about the server where the command was called.'
   },
   {
-    "name" : 'join', 
-    'args' : '',
-    'dis' : 'Joins the bot to the user\'s voice channel.'
-  },
-  {
-    "name" : 'move', 
-    'args' : '',
-    'dis' : 'Moves all users connected to the voice channel where the bot is.'
-  },
-  {
-    "name" : 'leave', 
-    'args' : '',
-    'dis' : 'Disconnects the bot from the voice channel.'
-  },
-  {
     "name" : 'help', 
     'args' : '[command]',
     'dis' : 'Shows this message if no command was provided.'
@@ -155,19 +140,6 @@ def get_random_fact():
   json_data = json.loads(response.text)
   useless_fact = f'{json_data["text"]}'
   return useless_fact
-
-
-@bot.command()
-@commands.has_guild_permissions(move_members=True)
-async def join(ctx):
-  voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
-  print(voice_client, ctx.author.voice)
-  if voice_client and voice_client.is_connected():
-    await ctx.reply('I\'m already in a voice channel!', mention_author=False)
-  elif ctx.author.voice is None:
-    await ctx.reply('You need to be in a voice channel to use this command.', mention_author=False)
-  else:
-    await ctx.author.voice.channel.connect()
 
 
 #help command

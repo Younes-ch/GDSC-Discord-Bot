@@ -1,3 +1,4 @@
 discord.py
+PyNacl
 requests
 discord-components==1.1.4
