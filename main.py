@@ -557,7 +557,23 @@ async def rps(ctx, *, member : discord.Member):
 
       await interaction2.respond(
         type = InteractionType.UpdateMessage,
-        content = player2_msg
+        embed = embed,
+        components = [
+          [
+            Button(
+              label = "🪨 Rock",
+              style = ButtonStyle.grey
+            ),
+            Button(
+              label = "🧻 Paper",
+              style = ButtonStyle.blue
+            ),
+            Button(
+              label = "✂️ Scissors",
+              style = ButtonStyle.red
+            )
+          ]
+        ]
       )
 
       arr = ['🧻 Paper&🪨 Rock', '✂️ Scissors&🧻 Paper']
