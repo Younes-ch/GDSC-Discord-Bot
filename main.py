@@ -576,8 +576,9 @@ async def rps(ctx, *, member : discord.Member):
         ]
       )
 
-      arr = ['🧻 Paper&🪨 Rock', '✂️ Scissors&🧻 Paper']
+      arr = ['🧻&🪨', '✂️&🧻']
       print("&".join([interaction1.component.label, interaction2.component.label]))
+      print(interaction1.component.label[0] == '🪨️' and interaction2.component.label[0] == '✂️')
       if interaction1.component.label == interaction2.component.label:
         embed = discord.Embed(title='Results', color=ctx.author.top_role.color)
         embed.add_field(name=f'{interaction1.component.label[0]} == {interaction2.component.label[0]}', value='It''s a Tie!', inline=False)
@@ -588,7 +589,7 @@ async def rps(ctx, *, member : discord.Member):
         await ctx.send(embed=embed)
         await ctx.author.send(embed=embed)
         await member.send(embed=embed)
-      elif (("&".join([interaction1.component.label, interaction2.component.label]) in arr) or (interaction1.component.label == '🪨 Rock️' and interaction2.component.label == '✂️ Scissors')):
+      elif (("&".join([interaction1.component.label[0], interaction2.component.label[0]]) in arr) or (interaction1.component.label[0] == '🪨' and interaction2.component.label[0] == '✂️')):
         embed = discord.Embed(title='Results', color=ctx.author.top_role.color)
         embed.add_field(name=f'{interaction1.component.label[0]} > {interaction2.component.label[0]}', value=f'🥳 {ctx.author.name} Wins! 🥳')
         embed.set_author(name='Game Over!')
@@ -608,7 +609,48 @@ async def rps(ctx, *, member : discord.Member):
         await ctx.send(embed=embed)
         await ctx.author.send(embed=embed)
         await member.send(embed=embed)
-
+      await player1_msg.edit(
+        components = [
+          [
+            Button(
+              label = "🪨 Rock",
+              style = ButtonStyle.grey,
+              disabled = True
+            ),
+            Button(
+              label = "🧻 Paper",
+              style = ButtonStyle.blue,
+              disabled = True
+            ),
+            Button(
+              label = "✂️ Scissors",
+              style = ButtonStyle.red,
+              disabled = True
+            )
+          ]
+        ]
+      )
+      await player2_msg.edit(
+        components = [
+          [
+            Button(
+              label = "🪨 Rock",
+              style = ButtonStyle.grey,
+              disabled = True
+            ),
+            Button(
+              label = "🧻 Paper",
+              style = ButtonStyle.blue,
+              disabled = True
+            ),
+            Button(
+              label = "✂️ Scissors",
+              style = ButtonStyle.red,
+              disabled = True
+            )
+          ]
+        ]
+      )
     except asyncio.TimeoutError:
       await message.delete()
       await ctx.send(f"{ctx.author.mention}, {member.mention}: `Game cancelled, timed out.`")
