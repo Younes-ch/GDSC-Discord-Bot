@@ -125,15 +125,15 @@ async def on_ready():
 
 
 @bot.event
-async def on_member_join(guild):
-  channel = await bot.get_channel(935969094652551189)
+async def on_member_join(member):
+  channel = bot.get_channel(935969094652551189)
 
   img = Image.open('GDSC Welcome Template.png')
-  font = ImageFont.truetype("OpenSans.ttf", 200)
+  font = ImageFont.truetype("OpenSans.ttf", 40)
 
   draw = ImageDraw.Draw(img)
-  draw.text((150, 150), 'WELCOME', (144, 240, 116), anchor="ms", font=font)
-  draw.text((150, 250), 'WELCOME', (60, 126, 250), anchor="ms", font=font)
+  draw.text((150, 40), 'WELCOME', (144, 240, 116), font=font)
+  draw.text((150, 60), member.display_name, (60, 126, 250), font=font)
   
   img.save("member_joined.png")
 
