@@ -132,7 +132,7 @@ async def on_member_join(member):
   await member.avatar_url.save(avatar_file_name)
   avatar = Image.open("avatar.png")
   avatar = avatar.resize((256, 256))
-  
+
   mask_im = Image.new("L", avatar.size, 0)
   draw = ImageDraw.Draw(mask_im)
   draw.ellipse((0, 0, 256, 256), fill=255)
@@ -147,8 +147,7 @@ async def on_member_join(member):
   draw.text((15, 320), 'To GDSC ISSATSo Community Server!', (60, 126, 250), font=font)
   
   background_copy.save("member_joined.png")
-
-  await channel.send(file=discord.File("member_joined.png"))
+  await channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. You are the **{member.guild.member_count}th** user!', file=discord.File("member_joined.png"))
   await asyncio.sleep(1)
   os.remove("member_joined.png")
   os.remove("avatar.png")
