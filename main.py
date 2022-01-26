@@ -2,6 +2,7 @@ import discord
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 from discord.ext import commands
 from discord.ext import tasks
+from PIL import Image, ImageFont, ImageDraw
 import os
 import requests
 import json
@@ -121,6 +122,24 @@ async def on_ready():
     if not guild.id in [828940910053556224, 783404400416391189]:
       await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
       await guild.leave()
+
+
+@bot.event
+async def on_member_join(guild):
+  channel = await bot.get_channel(935969094652551189)
+
+  img = Image.open('GDSC Welcome Template.png')
+  font = ImageFont.truetype("OpenSans.ttf", 200)
+
+  draw = ImageDraw.Draw(img)
+  draw.text((150, 150), 'WELCOME', (144, 240, 116), anchor="ms", font=font)
+  draw.text((150, 250), 'WELCOME', (60, 126, 250), anchor="ms", font=font)
+  
+  img.save("member_joined.png")
+
+  await channel.send(file=discord.File("member_joined.png"))
+  await asyncio.sleep(1)
+  os.remove("member_joined.png")
 
 @bot.event
 async def on_guild_join(guild):
