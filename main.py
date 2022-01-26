@@ -9,7 +9,7 @@ import json
 import logging
 import asyncio
 
-intents = discord.Intents().all()
+intents = discord.Intents(members=True, guilds=True, bans=True, invites=True, messages=True, guild_messages=True, dm_reactions=True, emojis=True, dm_messages=True, reactions=True, presences=True)
 logging.basicConfig(level=logging.INFO)
 activity = discord.Activity(type=discord.ActivityType.listening, name="&help")
 bot = commands.Bot(command_prefix='&', intents=intents, activity=activity)
@@ -526,10 +526,29 @@ async def rps(ctx, *, member : discord.Member):
       )
 
       await interaction1.respond(
-        type = InteractionType.ChannelMessageWithSource,
-        content = 'You chose **`{}`** Please wait for the other oponent to choose.'.format(interaction1.component.label)
+        type = InteractionType.UpdateMessage,
+        embed = embed,
+        components = [
+          [
+            Button(
+              label = "🪨 Rock",
+              style = ButtonStyle.grey,
+              disabled = True
+            ),
+            Button(
+              label = "🧻 Paper",
+              style = ButtonStyle.blue,
+              disabled = True
+            ),
+            Button(
+              label = "✂️ Scissors",
+              style = ButtonStyle.red,
+              disabled = True
+            )
+          ]
+        ]
       )
-
+      player1_choice = await ctx.author.send('You chose **`{}`**, Please wait for the other oponent to choose...'.format(interaction1.component.label))
       player2_msg = await member.send(
         embed=embed,
         components = [
@@ -562,26 +581,32 @@ async def rps(ctx, *, member : discord.Member):
           [
             Button(
               label = "🪨 Rock",
-              style = ButtonStyle.grey
+              style = ButtonStyle.grey,
+              disabled = True
             ),
             Button(
               label = "🧻 Paper",
-              style = ButtonStyle.blue
+              style = ButtonStyle.blue,
+              disabled = True
             ),
             Button(
               label = "✂️ Scissors",
-              style = ButtonStyle.red
+              style = ButtonStyle.red,
+              disabled = True
             )
           ]
         ]
       )
-
-      arr = ['🧻&🪨', '✂️&🧻']
-      print("&".join([interaction1.component.label, interaction2.component.label]))
-      print(interaction1.component.label[0] == '🪨️' and interaction2.component.label[0] == '✂️')
+      await player1_choice.delete()
+      arr = ['Rock&Scissors', 'Paper&Rock', 'Scissors&Paper']
+      choice1 = "".join([c for c in interaction1.component.label if c.isalpha()])
+      choice2 = "".join([c for c in interaction2.component.label if c.isalpha()])
+      print(choice1, choice2)
+      print("&".join([choice1, choice2]))
+      print("&".join([choice1, choice2]) in arr)
       if interaction1.component.label == interaction2.component.label:
         embed = discord.Embed(title='Results', color=ctx.author.top_role.color)
-        embed.add_field(name=f'{interaction1.component.label[0]} == {interaction2.component.label[0]}', value='It''s a Tie!', inline=False)
+        embed.add_field(name=f'{interaction1.component.label[0]} == {interaction2.component.label[0]}', value='**It\'s a Tie!**', inline=False)
         embed.set_author(name='Game Over!')
         embed.set_thumbnail(url='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6R63nEBSwQBGBICTHQrcbC9SAd_tdLR9k3w&usqp=CAU')
         embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
@@ -589,9 +614,9 @@ async def rps(ctx, *, member : discord.Member):
         await ctx.send(embed=embed)
         await ctx.author.send(embed=embed)
         await member.send(embed=embed)
-      elif (("&".join([interaction1.component.label[0], interaction2.component.label[0]]) in arr) or (interaction1.component.label[0] == '🪨' and interaction2.component.label[0] == '✂️')):
+      elif ("&".join([choice1, choice2]) in arr):
         embed = discord.Embed(title='Results', color=ctx.author.top_role.color)
-        embed.add_field(name=f'{interaction1.component.label[0]} > {interaction2.component.label[0]}', value=f'🥳 {ctx.author.name} Wins! 🥳')
+        embed.add_field(name=f'{interaction1.component.label[0]} > {interaction2.component.label[0]}', value=f'🥳 **{ctx.author.name}** Won! 🥳')
         embed.set_author(name='Game Over!')
         embed.set_thumbnail(url='https://www.pinclipart.com/picdir/big/576-5762132_player-1-wins-clipart.png')
         embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
@@ -601,7 +626,7 @@ async def rps(ctx, *, member : discord.Member):
         await member.send(embed=embed)
       else:
         embed = discord.Embed(title='Results', color=ctx.author.top_role.color)
-        embed.add_field(name=f'{interaction2.component.label[0]} > {interaction1.component.label[0]}', value=f'🥳 {member.name} Wins! 🥳')
+        embed.add_field(name=f'{interaction2.component.label[0]} > {interaction1.component.label[0]}', value=f'🥳 **{member.name}** Won! 🥳')
         embed.set_author(name='Game Over!')
         embed.set_thumbnail(url='http://learnlearn.uk/scratch/wp-content/uploads/sites/7/2018/01/player2png.png')
         embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
