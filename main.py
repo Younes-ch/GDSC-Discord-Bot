@@ -128,18 +128,31 @@ async def on_ready():
 async def on_member_join(member):
   channel = bot.get_channel(935969094652551189)
 
-  img = Image.open('GDSC Welcome Template.png')
-  font = ImageFont.truetype("OpenSans.ttf", 40)
-
-  draw = ImageDraw.Draw(img)
-  draw.text((150, 40), 'WELCOME', (144, 240, 116), font=font)
-  draw.text((150, 60), member.display_name, (60, 126, 250), font=font)
+  avatar_file_name = "avatar.png"
+  await member.avatar_url.save(avatar_file_name)
+  avatar = Image.open("avatar.png")
+  avatar = avatar.resize((256, 256))
   
-  img.save("member_joined.png")
+  mask_im = Image.new("L", avatar.size, 0)
+  draw = ImageDraw.Draw(mask_im)
+  draw.ellipse((0, 0, 256, 256), fill=255)
+  mask_im.save('mask_circle.png', quality=95)
+
+  background = Image.open('GDSC Welcome Template.png')
+  font = ImageFont.truetype("OpenSans.ttf", 40)
+  background_copy = background.copy()
+  background_copy.paste(avatar, (230, 20), mask_im)
+  draw = ImageDraw.Draw(background_copy)
+  draw.text((200, 280), 'WELCOME {}'.format(member.display_name), (144, 240, 116), font=font)
+  draw.text((15, 320), 'To GDSC ISSATSo Community Server!', (60, 126, 250), font=font)
+  
+  background_copy.save("member_joined.png")
 
   await channel.send(file=discord.File("member_joined.png"))
   await asyncio.sleep(1)
   os.remove("member_joined.png")
+  os.remove("avatar.png")
+  os.remove('mask_circle.png')
 
 @bot.event
 async def on_guild_join(guild):
