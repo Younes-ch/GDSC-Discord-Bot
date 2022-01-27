@@ -848,7 +848,7 @@ async def on_message_delete(message):
   if not message.author.bot:
     last_msg.append(message)
   await asyncio.sleep(60)
-  if len(last_msg) > len(message.guild.text_channels) * 5:
+  if len(last_msg) > 10:
     last_msg.clear()
 
 #snipe command
@@ -867,7 +867,7 @@ async def snipe(ctx : commands.Context):
         full_date = msg.created_at.strftime("%d-%b-%Y %X")
         splitted_date = full_date.split()
         joined_date = ' • '.join(splitted_date)
-        embed.add_field(name=f'Message deleted by {msg.author} in `{msg.channel.name}`:', value=f':e_mail: - **{msg.content}**!\n{joined_date}', inline=False)
+        embed.add_field(name=f'Message author is {msg.author} was sent in `{msg.channel.name}`:', value=f':e_mail: - **{msg.content}**!\n{joined_date}', inline=False)
     embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar_url)
     await ctx.reply(embed=embed, mention_author=False)
 
