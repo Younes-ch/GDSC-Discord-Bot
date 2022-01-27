@@ -69,7 +69,7 @@ cmds = [
   {
     "name" : 'ping', 
     'args' : '',
-    'dis' : 'Returns your current client ping.'
+    'dis' : 'Returns current bot\'s ping.'
   },
   {
     "name" : 'quote', 
