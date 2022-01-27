@@ -93,7 +93,7 @@ cmds = [
   }
 ]
 
-@tasks.loop(minutes=10)
+@tasks.loop(minutes=3)
 async def member_count():
   for guild in bot.guilds:
     overwrites = {
@@ -126,7 +126,10 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-  channel = bot.get_channel(935969094652551189)
+  if member.guild.id == 828940910053556224:
+    channel = bot.get_channel(935969094652551189)
+  else:
+    channel = bot.get_channel(783406528165838888)
 
   avatar_file_name = "avatar.png"
   await member.avatar_url.save(avatar_file_name)
@@ -135,7 +138,7 @@ async def on_member_join(member):
 
   mask_im = Image.new("L", avatar.size, 0)
   draw = ImageDraw.Draw(mask_im)
-  draw.ellipse((0, 0, 256, 256), fill=255)
+  draw.ellipse((0, 0, 256, 256), fill=255, outline=126, width=10)
   mask_im.save('mask_circle.png', quality=95)
 
   background = Image.open('GDSC Welcome Template.png')
@@ -143,8 +146,12 @@ async def on_member_join(member):
   background_copy = background.copy()
   background_copy.paste(avatar, (230, 20), mask_im)
   draw = ImageDraw.Draw(background_copy)
-  draw.text((200, 280), 'WELCOME {}'.format(member.display_name), (144, 240, 116), font=font)
-  draw.text((15, 320), 'To GDSC ISSATSo Community Server!', (60, 126, 250), font=font)
+  draw.text((10, 10), '#{}'.format(member.guild.member_count), (105, 105, 105), font=font)
+  draw.text((150, 280), 'WELCOME'.format(member.display_name), (144, 240, 116), font=font)
+  draw.text((350, 280), '{}'.format(member.display_name), (227, 139, 11), font=font)
+  draw.text((15, 320), 'To', (60, 126, 250), font=font)
+  draw.text((70, 320), 'GDSC ISSATSo', (250, 46, 24), font=font)
+  draw.text((340, 320), 'Community Server!', (60, 126, 250), font=font)
   
   background_copy.save("member_joined.png")
   await channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. You are the **{member.guild.member_count}th** user!', file=discord.File("member_joined.png"))
