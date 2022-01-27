@@ -131,7 +131,7 @@ async def on_member_join(member):
   else:
     welcome_channel = bot.get_channel(783406528165838888)
     rules_channel = bot.get_channel(841102973206659134)
-    await rules_channel.send(member.mention, delete_after=1)
+    await rules_channel.send(member.mention, delete_after=0.1)
 
   if not member.bot:
 
@@ -404,7 +404,6 @@ async def server_info(ctx):
   guild_human_members = len([x for x in ctx.guild.members if not x.bot])
   guild_bot_members = guild_member_count - guild_human_members
   guild_banned_members = len(await ctx.guild.bans())
-  guild_region = ctx.guild.region
   guild_member_statuses = f'🟢 {len(list(filter(lambda m: str(m.status) == "online", ctx.guild.members)))} 🟠 {len(list(filter(lambda m: str(m.status) == "idle", ctx.guild.members)))} 🔴 {len(list(filter(lambda m: str(m.status) == "dnd", ctx.guild.members)))} ⚪ {len(list(filter(lambda m: str(m.status) == "offline", ctx.guild.members)))}'
   guild_roles_count = len(ctx.guild.roles)
   guild_highest_role = ctx.guild.roles[-1].mention
@@ -424,7 +423,6 @@ async def server_info(ctx):
   embed.add_field(name='Roles:', value=guild_roles_count)
   embed.add_field(name='Highest Role:', value=f'{guild_highest_role}')
   embed.add_field(name='Invites:', value=len(await ctx.guild.invites()))
-  embed.add_field(name='Region:', value=guild_region)
   embed.add_field(name='Description:', value=guild_description, inline=False)
   embed.set_thumbnail(url=ctx.guild.icon_url)
   embed.set_footer(text=footer_text)
