@@ -2,5 +2,4 @@ discord.py
 pillow
 PyNacl
 requests
-replit
 discord-components==1.1.4
