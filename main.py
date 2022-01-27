@@ -158,7 +158,17 @@ async def on_member_join(member):
     draw.text((340, 320), 'Community Server!', (60, 126, 250), font=font)
     
     background_copy.save("member_joined.png")
-    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. You are the **{member.guild.member_count}th** user!', file=discord.File("member_joined.png"))
+
+    if member.guild.member_count % 10 == 1 and not 19 <= member.guild.member_count <= 10:
+      number_ordinal = 'st'
+    elif member.guild.member_count % 10 == 2 and not 19 <= member.guild.member_count <= 10:
+      number_ordinal = 'nd'
+    elif member.guild.member_count % 10 == 2 and not 19 <= member.guild.member_count <= 10:
+      number_ordinal = 'rd'
+    else:
+      number_ordinal = 'th'
+
+    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. You are the **{member.guild.member_count}{number_ordinal}** user!', file=discord.File("member_joined.png"))
     await asyncio.sleep(1)
     os.remove("member_joined.png")
     os.remove("avatar.png")
