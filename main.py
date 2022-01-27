@@ -148,7 +148,7 @@ async def on_member_join(member):
     draw = ImageDraw.Draw(background_copy)
     draw.text((10, 10), '#{}'.format(member.guild.member_count), (105, 105, 105), font=font)
     draw.text((150, 280), 'WELCOME', (144, 240, 116), font=font)
-    draw.text((350, 280), '{}'.format(member.display_name), (227, 139, 11), font=font)
+    draw.text((360, 280), '{}'.format(member.display_name), (227, 139, 11), font=font)
     draw.text((15, 320), 'To', (60, 126, 250), font=font)
     draw.text((70, 320), 'GDSC ISSATSo', (250, 46, 24), font=font)
     draw.text((340, 320), 'Community Server!', (60, 126, 250), font=font)
