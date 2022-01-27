@@ -3,6 +3,7 @@ from discord_components import DiscordComponents, Button, ButtonStyle, Interacti
 from discord.ext import commands
 from discord.ext import tasks
 from PIL import Image, ImageFont, ImageDraw
+from replit import db
 import os
 import requests
 import json
@@ -15,6 +16,8 @@ logging.basicConfig(level=logging.INFO)
 activity = discord.Activity(type=discord.ActivityType.listening, name="&help")
 bot = commands.Bot(command_prefix='&', intents=intents, activity=activity)
 bot.remove_command('help')
+db["Test-Server"] = 10
+db["GDSC ISSATSo"] = 402
 cmds = [
   {
     'name' : 'avatar',  
@@ -126,13 +129,18 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
+  print(db.items())
   if member.guild.id == 828940910053556224:
     welcome_channel = bot.get_channel(935969094652551189)
+    db["Test-Server"] += 1
+    current_counter = db["Test-Server"]
   else:
+    db["GDSC ISSATSo"] += 1
+    current_counter = db["GDSC ISSATSo"]
     welcome_channel = bot.get_channel(783406528165838888)
     rules_channel = bot.get_channel(841102973206659134)
     await rules_channel.send(member.mention, delete_after=0.1)
-
+  print(db.items())
   if not member.bot:
 
     avatar_file_name = "avatar.png"
@@ -150,7 +158,7 @@ async def on_member_join(member):
     background_copy = background.copy()
     background_copy.paste(avatar, (230, 20), mask_im)
     draw = ImageDraw.Draw(background_copy)
-    draw.text((10, 10), '#{}'.format(member.guild.member_count), (105, 105, 105), font=font)
+    draw.text((10, 10), '#{}'.format(current_counter), (105, 105, 105), font=font)
     draw.text((150, 280), 'WELCOME', (144, 240, 116), font=font)
     draw.text((360, 280), '{}'.format(member.display_name), (227, 139, 11), font=font)
     draw.text((15, 320), 'To', (60, 126, 250), font=font)
@@ -159,16 +167,16 @@ async def on_member_join(member):
     
     background_copy.save("member_joined.png")
 
-    if member.guild.member_count % 10 == 1 and not 19 <= member.guild.member_count <= 10:
+    if current_counter % 10 == 1 and not 19 <= current_counter <= 10:
       number_ordinal = 'st'
-    elif member.guild.member_count % 10 == 2 and not 19 <= member.guild.member_count <= 10:
+    elif current_counter % 10 == 2 and not 19 <= current_counter <= 10:
       number_ordinal = 'nd'
-    elif member.guild.member_count % 10 == 2 and not 19 <= member.guild.member_count <= 10:
+    elif current_counter % 10 == 2 and not 19 <= current_counter <= 10:
       number_ordinal = 'rd'
     else:
       number_ordinal = 'th'
 
-    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. You are the **{member.guild.member_count}{number_ordinal}** user!', file=discord.File("member_joined.png"))
+    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. You are the **{current_counter}{number_ordinal}** user!', file=discord.File("member_joined.png"))
     await asyncio.sleep(1)
     os.remove("member_joined.png")
     os.remove("avatar.png")
