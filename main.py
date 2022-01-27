@@ -127,10 +127,14 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
   if member.guild.id == 828940910053556224:
-    channel = bot.get_channel(935969094652551189)
+    welcome_channel = bot.get_channel(935969094652551189)
   else:
-    channel = bot.get_channel(783406528165838888)
+    welcome_channel = bot.get_channel(783406528165838888)
+    rules_channel = bot.get_channel(841102973206659134)
+    await rules_channel.send(member.mention, delete_after=1)
+
   if not member.bot:
+
     avatar_file_name = "avatar.png"
     await member.avatar_url.save(avatar_file_name)
     avatar = Image.open("avatar.png")
@@ -154,7 +158,7 @@ async def on_member_join(member):
     draw.text((340, 320), 'Community Server!', (60, 126, 250), font=font)
     
     background_copy.save("member_joined.png")
-    await channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. You are the **{member.guild.member_count}th** user!', file=discord.File("member_joined.png"))
+    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. You are the **{member.guild.member_count}th** user!', file=discord.File("member_joined.png"))
     await asyncio.sleep(1)
     os.remove("member_joined.png")
     os.remove("avatar.png")
