@@ -159,7 +159,7 @@ async def on_member_join(member):
     
     background_copy.save("member_joined.png")
 
-    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. **Enjoy** your stay!', file=discord.File("member_joined.png"))
+    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. *Enjoy your stay!*', file=discord.File("member_joined.png"))
     await asyncio.sleep(1)
     os.remove("member_joined.png")
     os.remove("avatar.png")
