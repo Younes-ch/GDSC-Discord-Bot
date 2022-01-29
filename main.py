@@ -33,8 +33,8 @@ cmds = [
   },
   {
     'name' : 'say',
-    'args' : '[message]',
-    'dis' : 'Sends the message as the bot.'
+    'args' : '[Text Channel] [message]',
+    'dis' : 'Sends the message as the bot in the text channel provided.'
   },
   {
     "name" : 'fact', 
@@ -328,7 +328,7 @@ async def weather(ctx):
 
 @help.command()
 async def say(ctx):
-  embed = generate_embed('Say', 'Sends the message that the user provided as the bot.', ctx.author, {'usage' : ['&say [message]'], 'examples' : ['&say Hello World!']})
+  embed = generate_embed('Say', 'Sends the message that the user provided as the bot in the text channel.', ctx.author, {'usage' : ['&say [Text Channel] [message]'], 'examples' : ['&say general Hello World!']})
   await ctx.send(embed=embed)
 
 
@@ -1018,18 +1018,32 @@ async def avatar(ctx, *, member : str = ''):
 #say command
 @bot.command(description='Sends the provided message.', aliases=['s'])
 @commands.guild_only()
-async def say(ctx, *, arg):
+async def say(ctx, channel : discord.TextChannel, *, message : str = ''):
   await ctx.message.delete()
-  await ctx.trigger_typing()
-  await ctx.send(arg)
+  await channel.trigger_typing()
+
+  if len(ctx.message.content.split()) > 2 or ctx.message.attachments:
+    if message:
+      await channel.send(message)
+
+    if ctx.message.attachments:
+      for img in ctx.message.attachments:
+        await channel.send(file=await img.to_file())
+  else:
+    raise commands.CommandError
+  
 
 @say.error
 async def say_error(ctx : commands.Context, error : commands.CommandError):
-  if isinstance(error, commands.MissingRequiredArgument):
+  if isinstance(error, commands.ChannelNotFound):
     await ctx.message.add_reaction('❌')
+    embed = discord.Embed(description=':rolling_eyes: - **{}**, I couldn\'t find a text channel named **{}**!'.format(ctx.author.name, ctx.message.content.split()[1]), color=0xe74c3c)
+    await ctx.send(embed=embed)  
+  else:
     embed = discord.Embed(title='Missing Arguments Error', description=':no_entry: - You are missing the required arguments to run this command!', color=0xe74c3c)
-    embed.add_field(name='Command:', value='**&say `[message]`**')
+    embed.add_field(name='Command:', value='**&say `[Text Channel] [message]`**')
     await ctx.send(embed=embed)
+
 
 #quote command
 @bot.command(description='Returns a random quote.')
