@@ -328,7 +328,7 @@ async def weather(ctx):
 
 @help.command()
 async def say(ctx):
-  embed = generate_embed('Say', 'Sends the message that the user provided as the bot in the text channel.', ctx.author, {'usage' : ['&say [Text Channel] [message]'], 'examples' : ['&say general Hello World!', '&say {} Hello World!'.format(ctx.channel.mention), '&say 195605500488384512 Hello World!']})
+  embed = generate_embed('Say', 'Sends the message that the user provided as the bot in the text channel.', ctx.author, {'usage' : ['&say [Text Channel] [message]'], 'examples' : ['&say general Hi!', '&say {} Hi!'.format(ctx.channel.mention), '&say 195605500488384512 Hi!']})
   await ctx.send(embed=embed)
 
 
