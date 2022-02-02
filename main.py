@@ -148,7 +148,8 @@ async def on_member_join(member):
     background_copy = background.copy()
     background_copy.paste(avatar, (947, 615), mask_im)
     draw = ImageDraw.Draw(background_copy)
-    draw.text((360, 395), '{}'.format(member.display_name), (231, 245, 254), font=font)
+    margin = 360 if len(member.display_name) == 7 else 360 -((len(member.display_name) - 7) * 20)
+    draw.text((margin, 395), '{}'.format(member.display_name), (231, 245, 254), font=font)
     
     background_copy.save("member_joined.png")
 
