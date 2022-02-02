@@ -128,14 +128,11 @@ async def on_ready():
 async def on_member_join(member):
   if member.guild.id == 828940910053556224:
     welcome_channel = bot.get_channel(935969094652551189)
-    current_counter = member.guild.member_count
   else:
-    current_counter = member.guild.member_count
     welcome_channel = bot.get_channel(783406528165838888)
     rules_channel = bot.get_channel(841102973206659134)
     await rules_channel.send(member.mention, delete_after=0.1)
   if not member.bot:
-
     avatar_file_name = "avatar.png"
     await member.avatar_url.save(avatar_file_name)
     avatar = Image.open("avatar.png")
@@ -444,14 +441,14 @@ async def user_info(ctx, *, member : discord.Member = None):
   embed = discord.Embed(title='User information:', color = member.top_role.color)
   embed.add_field(name='Name', value=member)
   embed.add_field(name='ID', value=member.id)
-  embed.add_field(name='Roles', value="\n".join([x.mention for x in member.roles if x.name != '@everyone']) if len(member.roles) > 1 else 'N/A')
+  embed.add_field(name='Status', value=statuses[str(member.status)])
   embed.add_field(name='Bot?', value='✅' if member.bot else '❌')
   embed.add_field(name='Booster', value=member.premium_since.strftime("%d-%b-%Y") if member.premium_since else '❌')
-  embed.add_field(name='Status', value=statuses[str(member.status)])
   embed.add_field(name='Activity', value=f'{str(member.activity.type).split(".")[-1].title()} **{str(member.activity.name)}**!' if member.activity else 'N/A')
   embed.add_field(name='Created at', value=member.created_at.strftime("%d-%b-%Y"))
   embed.add_field(name='Joined at', value=member.joined_at.strftime("%d-%b-%Y"))
   embed.set_thumbnail(url=member.avatar_url)
+  embed.add_field(name='Roles', value="\n".join([x.mention for x in member.roles if x.name != '@everyone']) if len(member.roles) > 1 else 'N/A')
   embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar_url)
   await ctx.reply(embed=embed, mention_author=False)
 
