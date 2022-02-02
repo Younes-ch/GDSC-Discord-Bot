@@ -136,23 +136,19 @@ async def on_member_join(member):
     avatar_file_name = "avatar.png"
     await member.avatar_url.save(avatar_file_name)
     avatar = Image.open("avatar.png")
-    avatar = avatar.resize((256, 256))
+    avatar = avatar.resize((148, 140))
 
     mask_im = Image.new("L", avatar.size, 0)
     draw = ImageDraw.Draw(mask_im)
-    draw.ellipse((0, 0, 256, 256), fill=255, outline=126, width=10)
+    draw.ellipse((0, 0, 148, 140), fill=255, outline=0, width=2)
     mask_im.save('mask_circle.png', quality=95)
 
     background = Image.open('GDSC Welcome Template.png')
-    font = ImageFont.truetype("OpenSans.ttf", 40)
+    font = ImageFont.truetype("Poppins-Black.ttf", 54)
     background_copy = background.copy()
-    background_copy.paste(avatar, (230, 20), mask_im)
+    background_copy.paste(avatar, (947, 615), mask_im)
     draw = ImageDraw.Draw(background_copy)
-    draw.text((150, 280), 'WELCOME', (144, 240, 116), font=font)
-    draw.text((360, 280), '{}'.format(member.display_name), (227, 139, 11), font=font)
-    draw.text((15, 320), 'To', (60, 126, 250), font=font)
-    draw.text((70, 320), 'GDSC ISSATSo', (250, 46, 24), font=font)
-    draw.text((340, 320), 'Community Server!', (60, 126, 250), font=font)
+    draw.text((360, 395), '{}'.format(member.display_name), (231, 245, 254), font=font)
     
     background_copy.save("member_joined.png")
 
