@@ -149,13 +149,13 @@ async def on_member_join(member):
     background_copy.paste(avatar, (947, 615), mask_im)
     draw = ImageDraw.Draw(background_copy)
     margin = 360 if len(member.display_name) == 7 else 360 -((len(member.display_name) - 7) * 20)
-    draw.text((margin, 395), '{}'.format(member.display_name), (231, 245, 254), font=font)
+    draw.text((margin, 405), '{}'.format(member.display_name), (231, 245, 254), font=font)
     
-    background_copy.save("member_joined.png")
+    background_copy.save("member_landed.png")
 
-    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. *Enjoy your stay!*', file=discord.File("member_joined.png"))
+    await welcome_channel.send(content=f'Welcome {member.mention} to **GDSC ISSATSo Community Server**. *Enjoy your stay!*', file=discord.File("member_landed.png"))
     await asyncio.sleep(1)
-    os.remove("member_joined.png")
+    os.remove("member_landed.png")
     os.remove("avatar.png")
     os.remove('mask_circle.png')
 
