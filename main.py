@@ -123,7 +123,6 @@ async def on_ready():
       await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
       await guild.leave()
 
-
 @bot.event
 async def on_member_join(member):
   if member.guild.id == 828940910053556224:
@@ -144,12 +143,12 @@ async def on_member_join(member):
     mask_im.save('mask_circle.png', quality=95)
 
     background = Image.open('GDSC Welcome Template.png')
-    font = ImageFont.truetype("Poppins-Black.ttf", 54)
+    font = ImageFont.truetype("Google-Sans.ttf", 54)
     background_copy = background.copy()
-    background_copy.paste(avatar, (947, 615), mask_im)
+    background_copy.paste(avatar, (951, 596), mask_im)
     draw = ImageDraw.Draw(background_copy)
-    margin = 360 if len(member.display_name) == 7 else 360 -((len(member.display_name) - 7) * 20)
-    draw.text((margin, 403), '{}'.format(member.display_name), (231, 245, 254), font=font)
+    margin = 410 if len(member.display_name) == 2 else (410 - ((len(member.display_name)/2) * 20))
+    draw.text((margin, 407), '{}'.format(member.display_name), (231, 245, 254), font=font)
     
     background_copy.save("member_landed.png")
 
