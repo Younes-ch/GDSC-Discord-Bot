@@ -123,6 +123,14 @@ async def on_ready():
       await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
       await guild.leave()
 
+
+@bot.event
+async def on_member_update(before, after):
+  if "Event Host" in [role.name for role in after.roles] and "Event Host" not in after.display_name:
+    await after.edit(nick=f'[Event Host] {before.display_name}')
+  elif "Event Host" not in [role.name for role in after.roles] and "Event Host" in after.display_name:
+    await after.edit(nick="".join(before.display_name[12:]))
+
 @bot.event
 async def on_member_join(member):
   if member.guild.id == 828940910053556224:
