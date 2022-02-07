@@ -128,13 +128,13 @@ async def on_ready():
 async def on_member_update(before, after):
   if "Event Host" in [role.name for role in after.roles] and "Event Host" not in after.display_name:
     if after == after.guild.owner:
-      await after.guild.owner.send('**Event Host** Role has just been __added__ to your roles, so please go ahead and add **[Event Host]** *tag* to your nickname!')
+      await after.guild.owner.send('**Event Host** Role has just been __added__ to your roles in **{}** server, so please go ahead and add **[Event Host]** *tag* to your nickname!'.format(after.guild.name))
     else:
       await after.edit(nick=f'[Event Host] {before.display_name}')
   elif "Event Host" not in [role.name for role in after.roles] and "Event Host" in after.display_name:
     if after == after.guild.owner:
-      await after.guild.owner.send('**Event Host** Role has just been __removed__ from your roles, you can remove the **[Event Host]** *tag* from your nickname!')
-    else:
+      await after.guild.owner.send('**Event Host** Role has just been __removed__ from your roles in **{}** server, you can remove the **[Event Host]** *tag* from your nickname!'.format())
+   guild.name else:
       await after.edit(nick="".join(before.display_name[12:]))
 
 @bot.event
