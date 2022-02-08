@@ -174,6 +174,7 @@ async def on_member_join(member):
       embed.add_field(name='✉️ Inviter:', value=invite.inviter)
       embed.set_footer(text='Guild ID: {}'.format(member.guild.id), icon_url=member.guild.icon_url)
       embed.set_thumbnail(url=member.avatar_url)
+      await asyncio.sleep(2)
       await logs_channel.send(embed=embed)
       invites[member.guild.id] = invites_after_join
 
