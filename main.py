@@ -110,6 +110,10 @@ async def member_count():
   print('Updated')  
 member_count.start()
 
+
+invites = {}
+
+
 @bot.event
 async def on_ready():
   DiscordComponents(bot)
@@ -122,6 +126,8 @@ async def on_ready():
     if not guild.id in [828940910053556224, 783404400416391189]:
       await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
       await guild.leave()
+    else:
+      invites[guild.id] = await guild.invites()
 
 
 @bot.event
@@ -137,14 +143,44 @@ async def on_member_update(before, after):
     else:
       await after.edit(nick="".join(before.display_name[12:]))
 
+
+
+def find_invite_by_code(invite_list, code):
+  for inv in invite_list:     
+      if inv.code == code:
+          return inv
+
+
 @bot.event
 async def on_member_join(member):
   if member.guild.id == 828940910053556224:
     welcome_channel = bot.get_channel(935969094652551189)
+    logs_channel = bot.get_channel(940729129689554944)
   else:
     welcome_channel = bot.get_channel(783406528165838888)
     rules_channel = bot.get_channel(841102973206659134)
+    logs_channel = bot.get_channel(918582510915567616)
     await rules_channel.send(member.mention, delete_after=0.1)
+
+  global invites
+  invites_before_join = invites[member.guild.id]
+  invites_after_join = await member.guild.invites()
+
+  for invite in invites_before_join:
+    if invite.uses < find_invite_by_code(invites_after_join, invite.code).uses:
+      embed = discord.Embed(description='📥 **{} has joined the server**'.format(member.mention), color=0x6BF2E4)
+      embed.set_author(name=f'{member.name}', icon_url=member.avatar_url)
+      embed.add_field(name='🔒 Invite Code:', value=invite.code)
+      embed.add_field(name='✉️ Inviter:', value=invite.inviter)
+      embed.set_footer(text='Guild ID: {}'.format(member.guild.id), icon_url=member.guild.icon_url)
+      embed.set_thumbnail(url=member.avatar_url)
+      await logs_channel.send(embed=embed)
+      print(f"Member {member.name} Joined")
+      print(f"Invite Code: {invite.code}")
+      print(f"Inviter: {invite.inviter}")
+      invites[member.guild.id] = invites_after_join
+      return
+
   if not member.bot:
     avatar_file_name = "avatar.png"
     await member.avatar_url.save(avatar_file_name)
@@ -171,6 +207,10 @@ async def on_member_join(member):
     os.remove("member_landed.png")
     os.remove("avatar.png")
     os.remove('mask_circle.png')
+
+@bot.event
+async def on_member_remove(member):
+  invites[member.guild.id] = await member.guild.invites()
 
 @bot.event
 async def on_guild_join(guild):
