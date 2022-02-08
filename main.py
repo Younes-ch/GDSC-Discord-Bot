@@ -175,11 +175,7 @@ async def on_member_join(member):
       embed.set_footer(text='Guild ID: {}'.format(member.guild.id), icon_url=member.guild.icon_url)
       embed.set_thumbnail(url=member.avatar_url)
       await logs_channel.send(embed=embed)
-      print(f"Member {member.name} Joined")
-      print(f"Invite Code: {invite.code}")
-      print(f"Inviter: {invite.inviter}")
       invites[member.guild.id] = invites_after_join
-      return
 
   if not member.bot:
     avatar_file_name = "avatar.png"
