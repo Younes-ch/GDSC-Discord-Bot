@@ -155,11 +155,11 @@ def find_invite_by_code(invite_list, code):
 async def on_member_join(member):
   if member.guild.id == 828940910053556224:
     welcome_channel = bot.get_channel(935969094652551189)
-    logs_channel = bot.get_channel(940729129689554944)
+    invites_channel = bot.get_channel(940729129689554944)
   else:
     welcome_channel = bot.get_channel(783406528165838888)
     rules_channel = bot.get_channel(841102973206659134)
-    logs_channel = bot.get_channel(918582510915567616)
+    invites_channel = bot.get_channel(941418127261040720)
     await rules_channel.send(member.mention, delete_after=0.1)
 
 
