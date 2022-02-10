@@ -204,7 +204,7 @@ async def on_member_join(member):
         embed.set_footer(text='Guild: {}'.format(member.guild.name), icon_url=member.guild.icon_url)
         embed.set_thumbnail(url=member.avatar_url)
         await asyncio.sleep(2)
-        await logs_channel.send(embed=embed)
+        await invites_channel.send(embed=embed)
         invites[member.guild.id] = invites_after_join
 
 @bot.event
