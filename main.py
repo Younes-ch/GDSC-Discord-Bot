@@ -162,21 +162,6 @@ async def on_member_join(member):
     logs_channel = bot.get_channel(918582510915567616)
     await rules_channel.send(member.mention, delete_after=0.1)
 
-  global invites
-  invites_before_join = invites[member.guild.id]
-  invites_after_join = await member.guild.invites()
-
-  for invite in invites_before_join:
-    if invite.uses < find_invite_by_code(invites_after_join, invite.code).uses:
-      embed = discord.Embed(description='📥 **{} has joined the server**'.format(member.mention), color=0x6BF2E4)
-      embed.set_author(name=f'{member.name}', icon_url=member.avatar_url)
-      embed.add_field(name='🔒 Invite Code:', value=invite.code)
-      embed.add_field(name='✉️ Inviter:', value=invite.inviter)
-      embed.set_footer(text='Guild ID: {}'.format(member.guild.id), icon_url=member.guild.icon_url)
-      embed.set_thumbnail(url=member.avatar_url)
-      await asyncio.sleep(2)
-      await logs_channel.send(embed=embed)
-      invites[member.guild.id] = invites_after_join
 
   if not member.bot:
     avatar_file_name = "avatar.png"
@@ -204,6 +189,23 @@ async def on_member_join(member):
     os.remove("member_landed.png")
     os.remove("avatar.png")
     os.remove('mask_circle.png')
+
+  global invites
+  invites_before_join = invites[member.guild.id]
+  invites_after_join = await member.guild.invites()
+
+  for invite in invites_before_join:
+    if find_invite_by_code(invites_after_join, invite.code):
+      if invite.uses < find_invite_by_code(invites_after_join, invite.code).uses:
+        embed = discord.Embed(description='📥 **{} has joined the server**'.format(member.mention), color=0x6BF2E4)
+        embed.set_author(name=f'{member.name}', icon_url=member.avatar_url)
+        embed.add_field(name='🔒 Invite Code:', value=invite.code)
+        embed.add_field(name='✉️ Inviter:', value=invite.inviter)
+        embed.set_footer(text='Guild: {}'.format(member.guild.name), icon_url=member.guild.icon_url)
+        embed.set_thumbnail(url=member.avatar_url)
+        await asyncio.sleep(2)
+        await logs_channel.send(embed=embed)
+        invites[member.guild.id] = invites_after_join
 
 @bot.event
 async def on_member_remove(member):
