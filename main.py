@@ -6,7 +6,7 @@ from PIL import Image, ImageFont, ImageDraw
 import os
 import requests
 import json
-#from keep_alive import keep_alive
+from keep_alive import keep_alive
 import logging
 import asyncio
 
@@ -60,11 +60,6 @@ cmds = [
     "name" : 'joke', 
     'args' : '[word]',
     'dis' : 'Returns a random joke contains the word (word argument can be omitted).'
-  },
-  {
-    "name" : 'movie', 
-    'args' : '[movie/serie name]',
-    'dis' : 'Returns detailed information about the movie/serie mentioned.'
   },
   {
     "name" : 'ping', 
@@ -405,11 +400,6 @@ async def rps(ctx):
 @help.command()
 async def joke(ctx):
   embed = generate_embed('Joke', 'Returns a random joke contains the word (word argument can be omitted).', ctx.author, {'usage' : ['&joke', '&joke [word]'], 'examples' : ['&joke', '&joke christmas']})
-  await ctx.send(embed=embed)
-
-@help.command()
-async def movie(ctx):
-  embed = generate_embed('Movie', 'Returns detailed information about the movie/serie mentioned.', ctx.author, {'usage' : ['&movie [movie/serie name]'], 'examples' : ['&movie Red Notice', '&movie Breaking Bad']})
   await ctx.send(embed=embed)
 
 @help.command()
@@ -825,71 +815,6 @@ async def rps_error(ctx, error : commands.CommandError):
   else:
     print(error)
 
-#movie command
-@bot.command()
-@commands.guild_only()
-async def movie(ctx, *, search_term : str):
-  response = requests.get("https://imdb-api.com/en/API/SearchAll/k_g8yoa1tc/{}".format("%20".join(search_term.lower().split())))
-  json_data = json.loads(response.text)
-  if not json_data['results'] or json_data['results'][0]['resultType'] != 'Title':
-    await ctx.message.add_reaction('❌')
-    embed = discord.Embed(description=':rolling_eyes: - No movies/series were found that match your provided filter(s).!', color=0xe74c3c)
-    await ctx.reply(embed=embed, mention_author=False)
-  else:
-    movie_id = json_data['results'][0]['id']
-    url = "https://imdb-api1.p.rapidapi.com/Title/k_g8yoa1tc/{}".format(movie_id)
-
-    headers = {
-        'x-rapidapi-host': "imdb-api1.p.rapidapi.com",
-        'x-rapidapi-key': "ec2f8ccf8bmshbf1cf334816d19ep12966ejsnbf378abe0c43"
-        }
-
-    response = requests.request("GET", url, headers=headers)
-
-    json_data = json.loads(response.text)
-    title = json_data['title']
-    type = json_data['type']
-    year = json_data['year']
-    image_url = json_data['image']
-    release_date = json_data['releaseDate']
-    length = json_data['runtimeStr'] if type == 'Movie' else '{} Seasons'.format(len(json_data['tvSeriesInfo']['seasons']))
-    summary = json_data['plot']
-    awards = json_data['awards'] if json_data['awards'] else 'N/A'
-    directors = json_data['directors'] if json_data['directors'] else 'N/A'
-    writers = json_data['writers'] if json_data['writers'] else json_data['tvSeriesInfo']['creators']
-    stars = json_data['stars']
-    genres = json_data['genres']
-    countries = json_data['countries']
-    languages = json_data['languages']
-    rating = json_data['imDbRating']
-    budget = json_data['boxOffice']['budget'].split()[0] if json_data['boxOffice']['budget'] else 'N/A'
-
-    embed = discord.Embed(title=f'{title} ({year}) ({type})', color=ctx.author.top_role.color)
-    embed.add_field(name='Stars:', value=stars, inline=False)
-    embed.add_field(name='Awards:', value=awards)
-    embed.add_field(name='Budget:', value=budget)
-    embed.add_field(name='Countries:', value=countries)
-    embed.add_field(name='Directors:', value=directors)
-    embed.add_field(name='Release Date:', value=release_date)
-    embed.add_field(name='Length:', value=length)
-    embed.add_field(name='Genres:', value=genres)
-    embed.add_field(name='Languages:', value=languages)
-    embed.add_field(name='IMDB Rating:', value=rating)
-    embed.add_field(name='Summary:', value=summary)
-    embed.set_thumbnail(url=image_url)
-    embed.set_footer(text=f'Writers: {writers}', icon_url=image_url)
-
-    await ctx.reply(embed=embed, mention_author=False)
-
-
-@movie.error
-async def movie_error(ctx : commands.Context, error : commands.CommandError):
-  if isinstance(error, commands.MissingRequiredArgument):
-    await ctx.message.add_reaction('❌')
-    embed = discord.Embed(title='Missing Arguments Error', description=':no_entry: - You are missing the required arguments to run this command!', color=0xe74c3c)
-    embed.add_field(name='Command:', value='**&movie `[movie/serie name]`**')
-    await ctx.send(embed=embed)
-
 
 last_msg = []
 @bot.event
@@ -1107,5 +1032,5 @@ async def quote(ctx):
   embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url=ctx.author.avatar_url)
   await ctx.send(embed=embed)
 
-#keep_alive()
+keep_alive()
 bot.run(os.getenv('TOKEN'))
