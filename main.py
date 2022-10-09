@@ -156,7 +156,7 @@ async def on_member_join(member):
     rules_channel = bot.get_channel(841102973206659134)
     invites_channel = bot.get_channel(941418127261040720)
     await rules_channel.send(member.mention, delete_after=0.1)
-    await member.add_roles(member.guild.get_role(835557953057718314), reason="New Member")
+    # await member.add_roles(member.guild.get_role(835557953057718314), reason="New Member")
 
 
   if not member.bot:
