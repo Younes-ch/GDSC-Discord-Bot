@@ -2,13 +2,13 @@ from PIL import Image, ImageFont, ImageDraw
 from discord.ext import commands
 from discord.ext import tasks
 from dotenv import load_dotenv
+import discord
 import requests
 import discord
 import logging
 import asyncio
 import json
 import os
-#from keep_alive import keep_alive
 
 load_dotenv()
 intents = discord.Intents.all()
@@ -238,17 +238,51 @@ class MyButton(discord.ui.Button):
       if self.view.current_page == len(self.view.listOfEmbeds):
         self.view.current_page = 0
       await interaction.response.edit_message(embed=self.view.listOfEmbeds[self.view.current_page])
-
     elif self.custom_id == 'prev':
       self.view.current_page -= 1
       if self.view.current_page < 0:
         self.view.current_page = len(self.view.listOfEmbeds) - 1
       await interaction.response.edit_message(embed=self.view.listOfEmbeds[self.view.current_page])
     
-    self.view.children[1].label = 'Page: {}/{}'.format(self.view.current_page + 1, len(self.view.listOfEmbeds))
-    await interaction.message.edit(view=self.view)
+    if "Page" in self.view.children[1].label:
+      self.view.children[1].label = 'Page: {}/{}'.format(self.view.current_page + 1, len(self.view.listOfEmbeds))
+      await interaction.message.edit(view=self.view)
 
-class MyView(discord.ui.View):
+    if self.custom_id == 'rock':
+      await interaction.response.send_message('You chose **`{}`**, Please wait for the other oponent to choose...'.format(self.label))
+      self.view.players_choices.append(self.label)
+      await self.view.disable()
+      if interaction.user == self.view.author:
+        player2_msg = await self.view.member.send(embed=self.view.embed)
+        self.view.player_msg = player2_msg
+        await player2_msg.edit(view=self.view)
+        await self.view.enable()
+      if len(self.view.players_choices) == 2:
+        await self.view.get_winner()
+    elif self.custom_id == 'paper':
+      await interaction.response.send_message('You chose **`{}`**, Please wait for the other oponent to choose...'.format(self.label))
+      self.view.players_choices.append(self.label)
+      await self.view.disable()
+      if interaction.user == self.view.author:
+        player2_msg = await self.view.member.send(embed=self.view.embed)
+        self.view.player_msg = player2_msg
+        await player2_msg.edit(view=self.view)
+        await self.view.enable()
+      if len(self.view.players_choices) == 2:
+        await self.view.get_winner()
+    elif self.custom_id == 'scissors':
+      await interaction.response.send_message('You chose **`{}`**, Please wait for the other oponent to choose...'.format(self.label))
+      self.view.players_choices.append(self.label)
+      await self.view.disable()
+      if interaction.user == self.view.author:
+        player2_msg = await self.view.member.send(embed=self.view.embed)
+        self.view.player_msg = player2_msg
+        await player2_msg.edit(view=self.view)
+        await self.view.enable()
+      if len(self.view.players_choices) == 2:
+        await self.view.get_winner()
+
+class ViewForHelpCommand(discord.ui.View):
   def __init__(self, *, message, listOfEmbeds : list[discord.Embed], timeout = 30):
     super().__init__(timeout=timeout)
     self.message = message
@@ -263,6 +297,119 @@ class MyView(discord.ui.View):
     self.children[2].disabled = True
     await self.message.edit(view=self)
 
+class ViewForRPSCommand(discord.ui.View):
+  def __init__(self, *, ctx, author, message, member, player_msg, embed, timeout = 30):
+    super().__init__(timeout=timeout)
+    self.ctx = ctx
+    self.author = author
+    self.message = message
+    self.member = member
+    self.player_msg = player_msg
+    self.embed = embed
+    self.players_choices = []
+    self.add_item(MyButton(label='🪨', style=discord.ButtonStyle.grey, custom_id='rock'))
+    self.add_item(MyButton(label='🧻', style=discord.ButtonStyle.blurple, custom_id='paper'))
+    self.add_item(MyButton(label='✂️', style=discord.ButtonStyle.red, custom_id='scissors'))
+
+  async def on_timeout(self):
+    self.children[0].disabled = True
+    self.children[1].disabled = True
+    self.children[2].disabled = True
+    await self.ctx.send('{}, {}: The game has ended due to inactivity!'.format(self.ctx.author.mention, self.member.mention))
+    await self.player_msg.delete()
+
+  async def disable(self):
+    self.children[0].disabled = True
+    self.children[1].disabled = True
+    self.children[2].disabled = True
+    await self.player_msg.edit(view=self)
+
+  async def enable(self):
+    self.children[0].disabled = False
+    self.children[1].disabled = False
+    self.children[2].disabled = False
+    await self.player_msg.edit(view=self)
+
+  async def get_winner(self):
+    if self.players_choices[0] == '🪨' and self.players_choices[1] == '🧻':
+      winner = self.member
+    elif self.players_choices[0] == '🪨' and self.players_choices[1] == '✂️':
+      winner = self.author
+    elif self.players_choices[0] == '🧻' and self.players_choices[1] == '🪨':
+      winner = self.author
+    elif self.players_choices[0] == '🧻' and self.players_choices[1] == '✂️':
+      winner = self.member
+    elif self.players_choices[0] == '✂️' and self.players_choices[1] == '🪨':
+      winner = self.member
+    elif self.players_choices[0] == '✂️' and self.players_choices[1] == '🧻':
+      winner = self.author
+    elif self.players_choices[0] == self.players_choices[1]:
+      winner = None
+
+    if winner == None:
+      embed = discord.Embed(title='Results', color=self.author.top_role.color)
+      embed.add_field(name=f'{self.players_choices[0]} == {self.players_choices[1]}', value='**It\'s a Tie!**', inline=False)
+      embed.set_author(name='Game Over!')
+      embed.set_thumbnail(url='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6R63nEBSwQBGBICTHQrcbC9SAd_tdLR9k3w&usqp=CAU')
+      embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
+      await self.message.delete()
+      await self.ctx.send(embed=embed)
+      await self.author.send(embed=embed)
+      await self.member.send(embed=embed)
+    elif winner == self.author:
+        embed = discord.Embed(title='Results', color=self.author.top_role.color)
+        embed.add_field(name=f'{self.players_choices[0]} > {self.players_choices[1]}', value=f'🥳 **{self.author.name}** Won! 🥳')
+        embed.set_author(name='Game Over!')
+        embed.set_thumbnail(url='https://www.pinclipart.com/picdir/big/576-5762132_player-1-wins-clipart.png')
+        embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
+        await self.message.delete()
+        await self.ctx.send(embed=embed)
+        await self.author.send(embed=embed)
+        await self.member.send(embed=embed)
+    else:
+        embed = discord.Embed(title='Results', color=self.author.top_role.color)
+        embed.add_field(name=f'{self.players_choices[1]} > {self.players_choices[0]}', value=f'🥳 **{self.member.name}** Won! 🥳')
+        embed.set_author(name='Game Over!')
+        embed.set_thumbnail(url='http://learnlearn.uk/scratch/wp-content/uploads/sites/7/2018/01/player2png.png')
+        embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
+        await self.message.delete()
+        await self.ctx.send(embed=embed)
+        await self.author.send(embed=embed)
+        await self.member.send(embed=embed)
+    self.players_choices.clear()
+    self.stop()
+
+#rps command
+@bot.command()
+async def rps(ctx, *, member : discord.Member):
+  if ctx.author == member or member.bot:
+    raise commands.MemberNotFound
+  else:
+    message = await ctx.send('`Creating a RPS game...`', mention_author=False)
+    embed = discord.Embed(title='Rock Paper Scissors:', description='**Who will win? 🤔**', color=ctx.author.top_role.color)
+    embed.set_thumbnail(url='https://facts.net/wp-content/uploads/2020/11/rock-paper-scissors.jpg')
+    embed.add_field(name='Player 1:', value=ctx.author.name)
+    embed.add_field(name='Player 2:', value=member.name)
+    await ctx.send(embed=embed)
+    embed.description = '**Choose an option from below:**'
+    player1_msg = await ctx.author.send(embed=embed)
+    view = ViewForRPSCommand(ctx=ctx, author=ctx.author, message=message, member=member, player_msg=player1_msg, embed=embed)
+    await player1_msg.edit(view=view)
+    await message.edit(content='`Game created successfully` *(Player 1 Check DMs)*')
+
+@rps.error
+async def rps_error(ctx, error : commands.CommandError):
+  if isinstance(error, commands.MissingRequiredArgument):
+    await ctx.message.add_reaction('❌')
+    embed = discord.Embed(title='Missing Arguments Error', description=':no_entry: - You are missing the required arguments to run this command!', color=0xe74c3c)
+    embed.add_field(name='Command:', value='**&rps `[member]`**')
+    await ctx.send(embed=embed)
+  elif isinstance(error, commands.MemberNotFound):
+    await ctx.message.add_reaction('❌')
+    embed = discord.Embed(title='Member Not Found Error', description=':no_entry: - Invalid opponent please mention another player!', color=0xe74c3c)
+    await ctx.send(embed=embed)
+  else:
+    print(error)
 
 #help command
 @bot.group(invoke_without_command=True)
@@ -289,97 +436,8 @@ async def help(ctx):
     listOfEmbeds = [embed1, embed2, embed3] 
     
   message = await ctx.send(embed=listOfEmbeds[0])
-  view = MyView(message=message, listOfEmbeds=listOfEmbeds)
+  view = ViewForHelpCommand(message=message, listOfEmbeds=listOfEmbeds)
   await message.edit(view=view)
-
-  # message = await ctx.reply(
-  #       embed = listOfEmbeds[currentPage],
-  #       mention_author=False,
-  #       components = [
-  #           [
-  #               Button(
-  #                   label = "Prev",
-  #                   style = ButtonStyle.green
-  #               ),
-  #               Button(
-  #                   label = f"Page {int(listOfEmbeds.index(listOfEmbeds[currentPage])) + 1}/{len(listOfEmbeds)}",
-  #                   style = ButtonStyle.grey,
-  #                   disabled = True
-  #               ),
-  #               Button(
-  #                   label = "Next",
-  #                   style = ButtonStyle.green
-  #               )
-  #           ]
-  #       ]
-  #   )
-  # while True:
-  #     try:
-  #       interaction = await bot.wait_for(
-  #           "button_click",
-  #           check = lambda i: i.component.label in ["Prev", "Next"],
-  #           timeout = 15.0
-  #       )
-  #       if interaction.component.label == "Prev" and interaction.user.id == ctx.author.id:
-  #           currentPage -= 1
-  #       elif interaction.component.label == "Next" and interaction.user.id == ctx.author.id:
-  #           currentPage += 1
-  #       if currentPage == len(listOfEmbeds):
-  #           currentPage = 0
-  #       elif currentPage < 0:
-  #           currentPage = len(listOfEmbeds) - 1
-  
-  #       if interaction.component.label in ["Prev", "Next"] and interaction.user.id == ctx.author.id:
-  #         await interaction.respond(
-  #         type = InteractionType.UpdateMessage,
-  #         embed = listOfEmbeds[currentPage],
-  #         components = [
-  #             [
-  #                 Button(
-  #                     label = "Prev",
-  #                     style = ButtonStyle.green
-  #                 ),
-  #                 Button(
-  #                     label = f"Page {int(listOfEmbeds.index(listOfEmbeds[currentPage])) + 1}/{len(listOfEmbeds)}",
-  #                     style = ButtonStyle.grey,
-  #                     disabled = True
-  #                 ),
-  #                 Button(
-  #                     label = "Next",
-  #                     style = ButtonStyle.green
-  #                 )
-  #             ]
-  #         ]
-  #       )
-  #       else:
-  #         await interaction.respond(
-  #           type = InteractionType.ChannelMessageWithSource,
-  #           content = 'This is not your help command!',
-  #       )          
-  #     except asyncio.TimeoutError:
-  #       await message.edit(
-  #           components = [
-  #               [
-  #                   Button(
-  #                       label = "Prev",
-  #                       style = ButtonStyle.green,
-  #                       disabled = True
-  #                   ),
-  #                   Button(
-  #                       label = f"Page {int(listOfEmbeds.index(listOfEmbeds[currentPage])) + 1}/{len(listOfEmbeds)}",
-  #                       style = ButtonStyle.grey,
-  #                       disabled = True
-  #                   ),
-  #                   Button(
-  #                       label = "Next",
-  #                       style = ButtonStyle.green,
-  #                       disabled = True
-  #                   )
-  #               ]
-  #           ]
-  #       )
-  #       break
-  
 
 def generate_embed(title, description, author, fields : dict, color = 0x70e68a) -> discord.Embed:
   embed = discord.Embed(title=title, description=description, color = color)
@@ -541,60 +599,60 @@ async def user_info_error(ctx, error : commands.CommandError):
     print(error)
 
 #weather command
-# @bot.command()
-# async def weather(ctx, *, city : str = None):
-#   url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}'.format("%20".join(city.split()), os.getenv('WEATHER')) if city else 'https://api.openweathermap.org/data/2.5/weather?q=Sousse&appid={}'.format(os.getenv('WEATHER'))
+@bot.command()
+async def weather(ctx, *, city : str = None):
+  url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}'.format("%20".join(city.split()), os.getenv('WEATHER_API_KEY')) if city else 'https://api.openweathermap.org/data/2.5/weather?q=Sousse&appid={}'.format(os.getenv('WEATHER_API_KEY'))
 
-#   response = requests.get(url)
-#   json_data = json.loads(response.text)
+  response = requests.get(url)
+  json_data = json.loads(response.text)
   
-#   if 'message' in json_data.keys():
-#     await ctx.message.add_reaction('❌')
-#     embed = discord.Embed(description=f':rolling_eyes: - {ctx.author.name} I can\'t find a city named **{city}**', color = 0xe74c3c)
-#     await ctx.reply(embed=embed, mention_author=False)
-#   else:
-#     country_code = json_data['sys']['country'].lower()
-#     city = json_data['name']
-#     weather_main = json_data['weather'][0]['main']
-#     weather_description = json_data['weather'][0]['description']
-#     weather_icon = 'https://openweathermap.org/img/wn/' + json_data['weather'][0]['icon'] + '@2x.png'
-#     temperature = str(round(json_data['main']['temp'] - 273.15, 2))
-#     feels_like = str(round(json_data['main']['feels_like'] - 273.15, 2))
-#     humidity = str(json_data['main']['humidity']) + '%'
-#     wind_speed = str(json_data['wind']['speed']) + 'm/s'
+  if 'message' in json_data.keys():
+    await ctx.message.add_reaction('❌')
+    embed = discord.Embed(description=f':rolling_eyes: - {ctx.author.name} I can\'t find a city named **{city}**', color = 0xe74c3c)
+    await ctx.reply(embed=embed, mention_author=False)
+  else:
+    country_code = json_data['sys']['country'].lower()
+    city = json_data['name']
+    weather_main = json_data['weather'][0]['main']
+    weather_description = json_data['weather'][0]['description']
+    weather_icon = 'https://openweathermap.org/img/wn/' + json_data['weather'][0]['icon'] + '@2x.png'
+    temperature = str(round(json_data['main']['temp'] - 273.15, 2))
+    feels_like = str(round(json_data['main']['feels_like'] - 273.15, 2))
+    humidity = str(json_data['main']['humidity']) + '%'
+    wind_speed = str(json_data['wind']['speed']) + 'm/s'
 
-#     embed = discord.Embed(title=f'Current weather in {city} :flag_{country_code}::', color=ctx.author.top_role.color)
-#     embed.add_field(name='Weather:', value=weather_main)
-#     embed.add_field(name='Description:', value=weather_description)
-#     embed.add_field(name='Temperature:', value=temperature)
-#     embed.add_field(name='Feels like:', value=feels_like)
-#     embed.add_field(name='Humidity:', value=humidity)
-#     embed.add_field(name='Wind speed:', value=wind_speed)
-#     embed.set_thumbnail(url=weather_icon)
-#     embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar.url)
-#     await ctx.reply(embed=embed, mention_author=False)
+    embed = discord.Embed(title=f'Current weather in {city} :flag_{country_code}::', color=ctx.author.top_role.color)
+    embed.add_field(name='Weather:', value=weather_main)
+    embed.add_field(name='Description:', value=weather_description)
+    embed.add_field(name='Temperature:', value=temperature)
+    embed.add_field(name='Feels like:', value=feels_like)
+    embed.add_field(name='Humidity:', value=humidity)
+    embed.add_field(name='Wind speed:', value=wind_speed)
+    embed.set_thumbnail(url=weather_icon)
+    embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar.url)
+    await ctx.reply(embed=embed, mention_author=False)
 
 #meme command
-# @bot.command()
-# async def meme(ctx, *, subreddit : str = None):
-#   url = ' https://meme-api.herokuapp.com/gimme' if not subreddit else ' https://meme-api.herokuapp.com/gimme/{}'.format("".join(subreddit.lower()))
+@bot.command()
+async def meme(ctx, *, subreddit : str = None):
+  url = ' https://meme-api.com/gimme' if not subreddit else 'https://meme-api.com/gimme/{}'.format("".join(subreddit.lower()))
 
-#   response = requests.get(url)
+  response = requests.get(url)
 
-#   json_data = json.loads(response.text)
-#   if 'subreddit' in json_data.keys():
-#     subreddit = '/r/' + json_data['subreddit']
-#     if json_data['nsfw'] == True:
-#       await ctx.reply('The meme you requested contains nsfw content.', delete_after=5, mention_author=False)
-#       await asyncio.sleep(5)
-#       await ctx.message.delete()
-#     else:
-#       await ctx.reply('Here is a meme from {}'.format(subreddit), mention_author=False)
-#       await ctx.send(json_data['url'])
-#   else:
-#     await ctx.message.add_reaction('❌')
-#     embed = discord.Embed(description=f':rolling_eyes: - {ctx.author.name} I can\'t find a subreddit named **{subreddit}**', color = 0xe74c3c)
-#     await ctx.reply(embed=embed, mention_author=False)
+  json_data = json.loads(response.text)
+  if 'subreddit' in json_data.keys():
+    subreddit = '/r/' + json_data['subreddit']
+    if json_data['nsfw'] == True:
+      await ctx.reply('The meme you requested contains nsfw content.', delete_after=5, mention_author=False)
+      await asyncio.sleep(5)
+      await ctx.message.delete()
+    else:
+      await ctx.reply('Here is a meme from {}'.format(subreddit), mention_author=False)
+      await ctx.send(json_data['url'])
+  else:
+    await ctx.message.add_reaction('❌')
+    embed = discord.Embed(description=f':rolling_eyes: - {ctx.author.name} I can\'t find a subreddit named **{subreddit}**', color = 0xe74c3c)
+    await ctx.reply(embed=embed, mention_author=False)
 
 #fact command
 @bot.command()
@@ -603,258 +661,6 @@ async def fact(ctx):
   embed.set_thumbnail(url='https://image.shutterstock.com/image-illustration/fun-facts-colorful-stripes-260nw-683840437.jpg')
   embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar.url)
   await ctx.reply(embed=embed, mention_author=False)
-
-#rps command
-# @bot.command()
-# async def rps(ctx, *, member : discord.Member):
-#   if ctx.author == member or member.bot:
-#     raise commands.MemberNotFound
-#   else:
-#     message = await ctx.send('`Creating a RPS game...`', mention_author=False)
-#     embed = discord.Embed(title='Rock Paper Scissors:', description='**Who will win? 🤔**', color=ctx.author.top_role.color)
-#     embed.set_thumbnail(url='https://facts.net/wp-content/uploads/2020/11/rock-paper-scissors.jpg')
-#     embed.add_field(name='Player 1:', value=ctx.author.name)
-#     embed.add_field(name='Player 2:', value=member.name)
-#     await ctx.send(embed=embed)
-#     embed.description = '**Choose an option from below:**'
-#     player1_msg = await ctx.author.send(
-#       embed=embed,
-#       components = [
-#         [
-#           Button(
-#             label = "🪨 Rock",
-#             style = ButtonStyle.grey
-#           ),
-#           Button(
-#             label = "🧻 Paper",
-#             style = ButtonStyle.blue
-#           ),
-#           Button(
-#             label = "✂️ Scissors",
-#             style = ButtonStyle.red
-#           )
-#         ]
-#       ])
-#     await message.edit(content='`Game created successfully` *(Check DMs)*')
-#     try:
-#       interaction1 = await bot.wait_for(
-#         "button_click",
-#         check=lambda i: i.component.label in ['🪨 Rock', '🧻 Paper', '✂️ Scissors'] and i.user.id == ctx.author.id,
-#         timeout=30
-#       )
-
-#       await interaction1.respond(
-#         type = InteractionType.UpdateMessage,
-#         embed = embed,
-#         components = [
-#           [
-#             Button(
-#               label = "🪨 Rock",
-#               style = ButtonStyle.grey,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "🧻 Paper",
-#               style = ButtonStyle.blue,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "✂️ Scissors",
-#               style = ButtonStyle.red,
-#               disabled = True
-#             )
-#           ]
-#         ]
-#       )
-#       player1_choice = await ctx.author.send('You chose **`{}`**, Please wait for the other oponent to choose...'.format(interaction1.component.label))
-#       player2_msg = await member.send(
-#         embed=embed,
-#         components = [
-#           [
-#             Button(
-#               label = "🪨 Rock",
-#               style = ButtonStyle.grey
-#             ),
-#             Button(
-#               label = "🧻 Paper",
-#               style = ButtonStyle.blue
-#             ),
-#             Button(
-#               label = "✂️ Scissors",
-#               style = ButtonStyle.red
-#             )
-#           ]
-#         ])
-
-#       interaction2 = await bot.wait_for(
-#         'button_click',
-#         check=lambda i: i.component.label in ['🪨 Rock', '🧻 Paper', '✂️ Scissors'] and i.user.id == member.id,
-#         timeout=30
-#       )
-
-#       await interaction2.respond(
-#         type = InteractionType.UpdateMessage,
-#         embed = embed,
-#         components = [
-#           [
-#             Button(
-#               label = "🪨 Rock",
-#               style = ButtonStyle.grey,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "🧻 Paper",
-#               style = ButtonStyle.blue,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "✂️ Scissors",
-#               style = ButtonStyle.red,
-#               disabled = True
-#             )
-#           ]
-#         ]
-#       )
-#       await player1_choice.delete()
-#       arr = ['Rock&Scissors', 'Paper&Rock', 'Scissors&Paper']
-#       choice1 = "".join([c for c in interaction1.component.label if c.isalpha()])
-#       choice2 = "".join([c for c in interaction2.component.label if c.isalpha()])
-#       print(choice1, choice2)
-#       print("&".join([choice1, choice2]))
-#       print("&".join([choice1, choice2]) in arr)
-#       if interaction1.component.label == interaction2.component.label:
-#         embed = discord.Embed(title='Results', color=ctx.author.top_role.color)
-#         embed.add_field(name=f'{interaction1.component.label[0]} == {interaction2.component.label[0]}', value='**It\'s a Tie!**', inline=False)
-#         embed.set_author(name='Game Over!')
-#         embed.set_thumbnail(url='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6R63nEBSwQBGBICTHQrcbC9SAd_tdLR9k3w&usqp=CAU')
-#         embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
-#         await message.delete()
-#         await ctx.send(embed=embed)
-#         await ctx.author.send(embed=embed)
-#         await member.send(embed=embed)
-#       elif ("&".join([choice1, choice2]) in arr):
-#         embed = discord.Embed(title='Results', color=ctx.author.top_role.color)
-#         embed.add_field(name=f'{interaction1.component.label[0]} > {interaction2.component.label[0]}', value=f'🥳 **{ctx.author.name}** Won! 🥳')
-#         embed.set_author(name='Game Over!')
-#         embed.set_thumbnail(url='https://www.pinclipart.com/picdir/big/576-5762132_player-1-wins-clipart.png')
-#         embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
-#         await message.delete()
-#         await ctx.send(embed=embed)
-#         await ctx.author.send(embed=embed)
-#         await member.send(embed=embed)
-#       else:
-#         embed = discord.Embed(title='Results', color=ctx.author.top_role.color)
-#         embed.add_field(name=f'{interaction2.component.label[0]} > {interaction1.component.label[0]}', value=f'🥳 **{member.name}** Won! 🥳')
-#         embed.set_author(name='Game Over!')
-#         embed.set_thumbnail(url='http://learnlearn.uk/scratch/wp-content/uploads/sites/7/2018/01/player2png.png')
-#         embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/7b2a3c20de224aa0b0c49856927d2d4a.webp?size=1024')
-#         await message.delete()
-#         await ctx.send(embed=embed)
-#         await ctx.author.send(embed=embed)
-#         await member.send(embed=embed)
-#       await player1_msg.edit(
-#         components = [
-#           [
-#             Button(
-#               label = "🪨 Rock",
-#               style = ButtonStyle.grey,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "🧻 Paper",
-#               style = ButtonStyle.blue,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "✂️ Scissors",
-#               style = ButtonStyle.red,
-#               disabled = True
-#             )
-#           ]
-#         ]
-#       )
-#       await player2_msg.edit(
-#         components = [
-#           [
-#             Button(
-#               label = "🪨 Rock",
-#               style = ButtonStyle.grey,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "🧻 Paper",
-#               style = ButtonStyle.blue,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "✂️ Scissors",
-#               style = ButtonStyle.red,
-#               disabled = True
-#             )
-#           ]
-#         ]
-#       )
-#     except asyncio.TimeoutError:
-#       await message.delete()
-#       await ctx.send(f"{ctx.author.mention}, {member.mention}: `Game cancelled, timed out.`")
-#       await player1_msg.edit(
-#         components = [
-#           [
-#             Button(
-#               label = "🪨 Rock",
-#               style = ButtonStyle.grey,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "🧻 Paper",
-#               style = ButtonStyle.blue,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "✂️ Scissors",
-#               style = ButtonStyle.red,
-#               disabled = True
-#             )
-#           ]
-#         ]
-#       )
-#       await player2_msg.edit(
-#         components = [
-#           [
-#             Button(
-#               label = "🪨 Rock",
-#               style = ButtonStyle.grey,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "🧻 Paper",
-#               style = ButtonStyle.blue,
-#               disabled = True
-#             ),
-#             Button(
-#               label = "✂️ Scissors",
-#               style = ButtonStyle.red,
-#               disabled = True
-#             )
-#           ]
-#         ]
-#       )
-#       return
-
-# @rps.error
-# async def rps_error(ctx, error : commands.CommandError):
-#   if isinstance(error, commands.MissingRequiredArgument):
-#     await ctx.message.add_reaction('❌')
-#     embed = discord.Embed(title='Missing Arguments Error', description=':no_entry: - You are missing the required arguments to run this command!', color=0xe74c3c)
-#     embed.add_field(name='Command:', value='**&rps `[member]`**')
-#     await ctx.send(embed=embed)
-#   elif isinstance(error, commands.MemberNotFound):
-#     await ctx.message.add_reaction('❌')
-#     embed = discord.Embed(title='Member Not Found Error', description=':no_entry: - Invalid opponent please mention another player!', color=0xe74c3c)
-#     await ctx.send(embed=embed)
-#   else:
-#     print(error)
-
 
 last_msg = []
 @bot.event
@@ -918,61 +724,62 @@ async def joke(ctx, *, contains : str = ''):
 
 
 #corona command
-# @bot.command()
-# @commands.guild_only()
-# async def corona(ctx, *, country : str = ''):
-#   url = "https://covid-193.p.rapidapi.com/statistics"
-#   country = 'Tunisia' if country == '' else country
-#   querystring = {"country":country}
+@bot.command()
+@commands.guild_only()
+async def corona(ctx, *, country : str = ''):
+  url = "https://covid-193.p.rapidapi.com/statistics"
+  country = 'Tunisia' if country == '' else country.title()
+  if country == 'United States':
+    country = "Usa"
+  querystring = {"country":country}
 
-#   headers = {
-#       'x-rapidapi-host': "covid-193.p.rapidapi.com",
-#       'x-rapidapi-key': "ec2f8ccf8bmshbf1cf334816d19ep12966ejsnbf378abe0c43"
-#       }
+  headers = {
+	  "X-RapidAPI-Key": "ec2f8ccf8bmshbf1cf334816d19ep12966ejsnbf378abe0c43",
+	  "X-RapidAPI-Host": "covid-193.p.rapidapi.com"
+  }
 
-#   response = requests.request("GET", url, headers=headers, params=querystring)
+  response = requests.request("GET", url, headers=headers, params=querystring)
 
-#   json_data = json.loads(response.text)
-#   if json_data['results'] == 0:
-#     await ctx.message.add_reaction('❌')
-#     embed = discord.Embed(description=':rolling_eyes: - {} I can\'t find a country named **{}**!'.format(ctx.author.name, country), color=0xe74c3c)
-#     await ctx.reply(embed=embed, mention_author=False)
-#   else:
-#     country = json_data['response'][0]['country']
-#     url = "https://covid-19-data.p.rapidapi.com/country"
+  json_data = json.loads(response.text)
+  if json_data['results'] == 0:
+    await ctx.message.add_reaction('❌')
+    embed = discord.Embed(description=':rolling_eyes: - {} I can\'t find a country named **{}**!'.format(ctx.author.name, country), color=0xe74c3c)
+    await ctx.reply(embed=embed, mention_author=False)
+  else:
+    url = "https://country-info.p.rapidapi.com/search"
+    if country == 'Usa':
+      country = 'United states'
+    querystring = {"query":country}
+    headers = {
+      "X-RapidAPI-Key": "ec2f8ccf8bmshbf1cf334816d19ep12966ejsnbf378abe0c43",
+      "X-RapidAPI-Host": "country-info.p.rapidapi.com"
+    }
+    response = requests.request("GET", url, headers=headers, params=querystring)
 
-#     querystring = {"name":country,"format":"json"}
-
-#     headers = {
-#         'x-rapidapi-host': "covid-19-data.p.rapidapi.com",
-#         'x-rapidapi-key': "ec2f8ccf8bmshbf1cf334816d19ep12966ejsnbf378abe0c43"
-#         }
-
-#     response = requests.request("GET", url, headers=headers, params=querystring)
-#     country_code = json.loads(response.text)[0]['code'].lower()
-#     continent = json_data['response'][0]['continent']
-#     population = json_data['response'][0]['population']
-#     new_cases = json_data['response'][0]['cases']['new']
-#     active_cases = json_data['response'][0]['cases']['active']
-#     recovered_cases = json_data['response'][0]['cases']['recovered']
-#     total_cases = json_data['response'][0]['cases']['total']
-#     new_deaths = json_data['response'][0]['deaths']['new']
-#     total_deaths = json_data['response'][0]['deaths']['total']
-#     day = json_data['response'][0]['day']
-#     embed = discord.Embed(title=f'Corona Statistics in {country} :flag_{country_code}::',
-#     color=0xe74c3c)
-#     embed.add_field(name='Continent:', value=continent)
-#     embed.add_field(name='Country:', value=country)
-#     embed.add_field(name='Population:', value=population)
-#     embed.add_field(name='Total Cases:', value=total_cases)
-#     embed.add_field(name='Active Cases:', value=active_cases)
-#     embed.add_field(name='New Cases:', value=new_cases)
-#     embed.add_field(name='Recovered:', value=recovered_cases)
-#     embed.add_field(name='Total Deaths:', value=total_deaths)
-#     embed.add_field(name='New Deaths:', value=new_deaths)
-#     embed.set_author(name=day)
-#     embed.set_footer(text='Stay safe 🌸')
-#     await ctx.reply(embed=embed, mention_author=False)
+    # country_code = json.loads(response.text)[0]['code'].lower()
+    flag = json.loads(response.text)[0]['flag']
+    embed = discord.Embed(title=f'Corona Statistics in {country} {flag}:', color=0xe74c3c)
+    continent = json_data['response'][0]['continent']
+    population = json_data['response'][0]['population']
+    new_cases = json_data['response'][0]['cases']['new']
+    active_cases = json_data['response'][0]['cases']['active']
+    recovered_cases = json_data['response'][0]['cases']['recovered']
+    total_cases = json_data['response'][0]['cases']['total']
+    new_deaths = json_data['response'][0]['deaths']['new']
+    total_deaths = json_data['response'][0]['deaths']['total']
+    day = json_data['response'][0]['day']
+    embed.add_field(name='Continent:', value=continent)
+    embed.add_field(name='Country:', value=country)
+    embed.add_field(name='Population:', value=population)
+    embed.add_field(name='Total Cases:', value=total_cases)
+    embed.add_field(name='Active Cases:', value=active_cases)
+    embed.add_field(name='New Cases:', value=new_cases)
+    embed.add_field(name='Recovered:', value=recovered_cases)
+    embed.add_field(name='Total Deaths:', value=total_deaths)
+    embed.add_field(name='New Deaths:', value=new_deaths)
+    embed.set_author(name=day)
+    embed.set_footer(text='Stay safe 🌸')
+    await ctx.reply(embed=embed, mention_author=False)
 
 #avatar command
 @bot.command()
@@ -1079,5 +886,4 @@ async def quote(ctx):
   embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url=ctx.author.avatar.url)
   await ctx.send(embed=embed)
 
-#keep_alive()
 bot.run(os.getenv('TOKEN'))
