@@ -161,7 +161,7 @@ async def on_member_join(member):
 
   if not member.bot:
     avatar_file_name = "avatar.png"
-    await member.avatar.url.save(avatar_file_name)
+    await member.display_avatar.save(avatar_file_name)
     avatar = Image.open("avatar.png")
     avatar = avatar.resize((148, 140))
 
@@ -194,11 +194,11 @@ async def on_member_join(member):
     if find_invite_by_code(invites_after_join, invite.code):
       if invite.uses < find_invite_by_code(invites_after_join, invite.code).uses:
         embed = discord.Embed(description='📥 **{} has joined the server**'.format(member.mention), color=0x6BF2E4)
-        embed.set_author(name=f'{member.name}', icon_url=member.avatar.url)
+        embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
         embed.add_field(name='🔒 Invite Code:', value=invite.code)
         embed.add_field(name='✉️ Inviter:', value=invite.inviter)
         embed.set_footer(text='Guild: {}'.format(member.guild.name), icon_url=member.guild.icon.url)
-        embed.set_thumbnail(url=member.avatar.url)
+        embed.set_thumbnail(url=member.display_avatar.url)
         await asyncio.sleep(2)
         await invites_channel.send(embed=embed)
         invites[member.guild.id] = invites_after_join
@@ -417,11 +417,11 @@ async def help(ctx):
   embed1 = discord.Embed(title='Commands:', color=0x70e68a)
   embed2 = discord.Embed(title='Commands:', color=0x70e68a)
   embed3 = discord.Embed(title='Commands:', color=0x70e68a)
-  embed1.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar.url)
+  embed1.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
   embed1.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
-  embed2.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar.url)
+  embed2.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
   embed2.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
-  embed3.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar.url)
+  embed3.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
   embed3.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
   global cmds
   counter = 0
@@ -443,7 +443,7 @@ def generate_embed(title, description, author, fields : dict, color = 0x70e68a) 
   embed = discord.Embed(title=title, description=description, color = color)
   embed.add_field(name='Usage:', value="\n".join(fields['usage']))
   embed.add_field(name='Examples:', value="\n".join(fields['examples']))
-  embed.set_footer(text='Requested by {}'.format(author), icon_url=author.avatar.url)
+  embed.set_footer(text='Requested by {}'.format(author), icon_url=author.display_avatar.url)
 
   return embed
 
@@ -585,9 +585,9 @@ async def user_info(ctx, *, member : discord.Member = None):
   embed.add_field(name='Activity', value=f'{str(member.activity.type).split(".")[-1].title()} **{str(member.activity.name)}**!' if member.activity else 'N/A')
   embed.add_field(name='Created at', value=member.created_at.strftime("%d-%b-%Y"))
   embed.add_field(name='Joined at', value=member.joined_at.strftime("%d-%b-%Y"))
-  embed.set_thumbnail(url=member.avatar.url)
+  embed.set_thumbnail(url=member.display_avatar.url)
   embed.add_field(name='Roles', value="\n".join([x.mention for x in member.roles if x.name != '@everyone']) if len(member.roles) > 1 else 'N/A')
-  embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.avatar.url)
+  embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
   await ctx.reply(embed=embed, mention_author=False)
 
 @user_info.error
@@ -629,7 +629,7 @@ async def weather(ctx, *, city : str = None):
     embed.add_field(name='Humidity:', value=humidity)
     embed.add_field(name='Wind speed:', value=wind_speed)
     embed.set_thumbnail(url=weather_icon)
-    embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
     await ctx.reply(embed=embed, mention_author=False)
 
 #meme command
@@ -659,7 +659,7 @@ async def meme(ctx, *, subreddit : str = None):
 async def fact(ctx):
   embed = discord.Embed(title='Random Fact:', description=get_random_fact(), color=ctx.author.top_role.color)
   embed.set_thumbnail(url='https://image.shutterstock.com/image-illustration/fun-facts-colorful-stripes-260nw-683840437.jpg')
-  embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar.url)
+  embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
   await ctx.reply(embed=embed, mention_author=False)
 
 last_msg = []
@@ -689,7 +689,7 @@ async def snipe(ctx : commands.Context):
         splitted_date = full_date.split()
         joined_date = ' • '.join(splitted_date)
         embed.add_field(name=f'Message author is `{msg.author}` was sent in `#{msg.channel.name}`:', value=f':e_mail: - **{msg.content}**!\n{joined_date}', inline=False)
-    embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
     await ctx.reply(embed=embed, mention_author=False)
 
 @snipe.error
@@ -716,7 +716,7 @@ async def joke(ctx, *, contains : str = ''):
     joke_category = json_data['category']
     joke = json_data['joke']
     embed = discord.Embed(title=f'{joke_category} Joke:', description=joke, color = ctx.author.top_role.color)
-    embed.set_footer(text='Request by {}'.format(ctx.author),icon_url=ctx.author.avatar.url)
+    embed.set_footer(text='Request by {}'.format(ctx.author),icon_url=ctx.author.display_avatar.url)
   else:
     await ctx.message.add_reaction('❌')
     embed = discord.Embed(description=':no_entry: - {} !'.format(json_data['causedBy'][0]), color=0xe74c3c)  
@@ -788,24 +788,24 @@ async def avatar(ctx, *, member : str = ''):
     if '@' in member:
       member = ctx.guild.get_member(int(member[2:-1]))
       embed = discord.Embed(title="Avatar Link",
-      url=member.avatar.url,
+      url=member.display_avatar.url,
       color=member.top_role.color)
       embed.set_author(name=member,
-      icon_url=member.avatar.url)
-      embed.set_image(url=member.avatar.url)
+      icon_url=member.display_avatar.url)
+      embed.set_image(url=member.display_avatar.url)
       embed.set_footer(text='Requested by {}'.format(ctx.author),
-      icon_url=ctx.author.avatar.url)
+      icon_url=ctx.author.display_avatar.url)
       await ctx.reply(embed = embed, mention_author=False)
     elif member.isnumeric():
       member = ctx.guild.get_member(int(member))
       embed = discord.Embed(title="Avatar Link",
-      url=member.avatar.url,
+      url=member.display_avatar.url,
       color=member.top_role.color)
       embed.set_author(name=member,
-      icon_url=member.avatar.url)
-      embed.set_image(url=member.avatar.url)
+      icon_url=member.display_avatar.url)
+      embed.set_image(url=member.display_avatar.url)
       embed.set_footer(text='Requested by {}'.format(ctx.author),
-      icon_url=ctx.author.avatar.url)
+      icon_url=ctx.author.display_avatar.url)
       await ctx.reply(embed = embed, mention_author=False)
     elif member == 'server':
       embed = discord.Embed(title="Avatar Link",
@@ -815,7 +815,7 @@ async def avatar(ctx, *, member : str = ''):
       icon_url=ctx.guild.icon.url)
       embed.set_image(url=ctx.guild.icon.url)
       embed.set_footer(text='Requested by {}'.format(ctx.author),
-      icon_url=ctx.author.avatar.url)
+      icon_url=ctx.author.display_avatar.url)
       await ctx.reply(embed = embed, mention_author=False)
     elif not ctx.guild.get_member_named(member):
       await ctx.message.add_reaction('❌')
@@ -824,24 +824,24 @@ async def avatar(ctx, *, member : str = ''):
     else:
       member = ctx.guild.get_member_named(member)
       embed = discord.Embed(title="Avatar Link",
-      url=member.avatar.url,
+      url=member.display_avatar.url,
       color=member.top_role.color)
       embed.set_author(name=member,
-      icon_url=member.avatar.url)
-      embed.set_image(url=member.avatar.url)
+      icon_url=member.display_avatar.url)
+      embed.set_image(url=member.display_avatar.url)
       embed.set_footer(text='Requested by {}'.format(ctx.author),
-      icon_url=ctx.author.avatar.url)
+      icon_url=ctx.author.display_avatar.url)
       await ctx.reply(embed = embed, mention_author=False)
   else:
     member = ctx.author
     embed = discord.Embed(title="Avatar Link",
-    url=member.avatar.url,
+    url=member.display_avatar.url,
     color=member.top_role.color)
     embed.set_author(name=member,
-    icon_url=member.avatar.url)
-    embed.set_image(url=member.avatar.url)
+    icon_url=member.display_avatar.url)
+    embed.set_image(url=member.display_avatar.url)
     embed.set_footer(text='Requested by {}'.format(member),
-    icon_url=member.avatar.url)
+    icon_url=member.display_avatar.url)
     await ctx.reply(embed = embed, mention_author=False)
 
 #say command
@@ -883,7 +883,7 @@ async def quote(ctx):
   description=quote,
   color=ctx.message.author.top_role.color)
   embed.add_field(name='Author:', value=f':book: *{author}*')
-  embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url=ctx.author.avatar.url)
+  embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url=ctx.author.display_avatar.url)
   await ctx.send(embed=embed)
 
 bot.run(os.getenv('TOKEN'))
