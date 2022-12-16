@@ -359,7 +359,7 @@ class ViewForRPSCommand(discord.ui.View):
 @bot.command()
 async def rps(ctx, *, member : discord.Member):
   if ctx.author == member or member.bot:
-    raise commands.MemberNotFound
+    raise commands.UserInputError('You can\'t play with yourself or a bot!')
   else:
     message = await ctx.send('`Creating a RPS game...`', mention_author=False)
     embed = discord.Embed(title='Rock Paper Scissors:', description='**Who will win? 🤔**', color=ctx.author.top_role.color)
@@ -380,7 +380,7 @@ async def rps_error(ctx, error : commands.CommandError):
     embed = discord.Embed(title='Missing Arguments Error', description=':no_entry: - You are missing the required arguments to run this command!', color=0xe74c3c)
     embed.add_field(name='Command:', value='**&rps `[member]`**')
     await ctx.send(embed=embed)
-  elif isinstance(error, commands.MemberNotFound):
+  elif isinstance(error, commands.UserInputError):
     await ctx.message.add_reaction('❌')
     embed = discord.Embed(title='Member Not Found Error', description=':no_entry: - Invalid opponent please mention another player!', color=0xe74c3c)
     await ctx.send(embed=embed)
