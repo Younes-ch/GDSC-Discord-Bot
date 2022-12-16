@@ -228,9 +228,7 @@ def get_random_fact():
   
 class MyButton(discord.ui.Button):
   def __init__(self, *, label, style, custom_id, disabled=False):
-    super().__init__(label=label, style=style, custom_id=custom_id)
-    if disabled:
-      self.disabled = disabled
+    super().__init__(label=label, style=style, custom_id=custom_id, disabled=disabled)
 
   async def callback(self, interaction: discord.Interaction):
     if self.custom_id == 'next':
@@ -248,29 +246,7 @@ class MyButton(discord.ui.Button):
       self.view.children[1].label = 'Page: {}/{}'.format(self.view.current_page + 1, len(self.view.listOfEmbeds))
       await interaction.message.edit(view=self.view)
 
-    if self.custom_id == 'rock':
-      await interaction.response.send_message('You chose **`{}`**, Please wait for the other oponent to choose...'.format(self.label))
-      self.view.players_choices.append(self.label)
-      await self.view.disable()
-      if interaction.user == self.view.author:
-        player2_msg = await self.view.member.send(embed=self.view.embed)
-        self.view.player_msg = player2_msg
-        await player2_msg.edit(view=self.view)
-        await self.view.enable()
-      if len(self.view.players_choices) == 2:
-        await self.view.get_winner()
-    elif self.custom_id == 'paper':
-      await interaction.response.send_message('You chose **`{}`**, Please wait for the other oponent to choose...'.format(self.label))
-      self.view.players_choices.append(self.label)
-      await self.view.disable()
-      if interaction.user == self.view.author:
-        player2_msg = await self.view.member.send(embed=self.view.embed)
-        self.view.player_msg = player2_msg
-        await player2_msg.edit(view=self.view)
-        await self.view.enable()
-      if len(self.view.players_choices) == 2:
-        await self.view.get_winner()
-    elif self.custom_id == 'scissors':
+    if self.custom_id == 'rock' or self.custom_id == 'scissors' or self.custom_id == 'paper':
       await interaction.response.send_message('You chose **`{}`**, Please wait for the other oponent to choose...'.format(self.label))
       self.view.players_choices.append(self.label)
       await self.view.disable()
