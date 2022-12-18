@@ -97,7 +97,7 @@ async def member_count():
     }
     found = False
     for vc in guild.voice_channels:
-      if vc.name.startswith('Member count:'):
+      if vc.name.lower().startswith('member count:'):
         await vc.edit(name='Member count: {}'.format(guild.member_count), overwrites=overwrites, user_limit=0, position=0)
         found = True
         break
@@ -119,7 +119,7 @@ async def on_ready():
   member_count.start()
   for guild in bot.guilds:
     if not guild.id in [828940910053556224, 783404400416391189]:
-      await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
+      await guild.owner.send(':rolling_eyes: Sorry, I left `{}` because I\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
       await guild.leave()
     else:
       invites[guild.id] = await guild.invites()
@@ -127,18 +127,20 @@ async def on_ready():
 
 @bot.event
 async def on_member_update(before, after):
-  if "Event Host" in [role.name for role in after.roles] and "Event Host" not in after.display_name:
-    if after == after.guild.owner:
-      await after.guild.owner.send('**Event Host** Role has just been __added__ to your roles in **{}** server, so please go ahead and add **[Event Host]** *tag* to your nickname!'.format(after.guild.name))
-    else:
-      await after.edit(nick=f'[Event Host] {before.display_name}')
-  elif "Event Host" not in [role.name for role in after.roles] and "Event Host" in after.display_name:
-    if after == after.guild.owner:
-      await after.guild.owner.send('**Event Host** Role has just been __removed__ from your roles in **{}** server, you can remove the **[Event Host]** *tag* from your nickname!'.format(after.guild.name))
-    else:
-      await after.edit(nick="".join(before.display_name[12:]))
-
-
+  before_roles = [role.name for role in before.roles]
+  after_roles = [role.name for role in after.roles]
+  if "Event Speaker" not in before_roles and "Event Speaker" in after_roles:
+    if "Event Speaker" not in after.display_name:
+      try:
+        await after.edit(nick=f'[Event Speaker] {before.display_name}')
+      except discord.errors.Forbidden:
+        await after.send('**Event Speaker** Role has just been __added__ to your roles in **{}** server, please go ahead and add **[Event Speaker]** *tag* to your nickname'.format(after.guild.name))
+  elif "Event Speaker" in before_roles and "Event Speaker" not in after_roles:
+    if "Event Speaker" in after.display_name:
+      try:
+ 	      await after.edit(nick=" ".join(before.display_name.split()[2:]))
+      except discord.errors.Forbidden:
+        await after.send('**Event Speaker** Role has just been __removed__ from your roles in **{}** server, you can remove the **[Event Speaker]** *tag* from your nickname!'.format(after.guild.name))
 
 def find_invite_by_code(invite_list, code):
   for inv in invite_list:     
