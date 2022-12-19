@@ -89,7 +89,7 @@ cmds = [
   }
 ]
 
-@tasks.loop(seconds=30)
+@tasks.loop(seconds=30.0)
 async def member_count():
   for guild in bot.guilds:
     overwrites = {
