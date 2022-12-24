@@ -371,9 +371,17 @@ async def rps_error(ctx, error : commands.CommandError):
 # question command
 @bot.command()
 async def question(ctx, *, question):
+  # {
+  #   "GDSC ISSATSo Community Server ID": "ID",
+  #   "My Test Server ID": "ID",
+  # }
+  corresponding_channels = {
+    828940910053556224: 1055489016281182360,
+    783404400416391189: 1056268271323709451,
+  }
   question = '"' + question.lower() + '"'
   API_KEY = os.getenv('STACKOVERFLOW_API_KEY')
-  if ctx.channel.id == 1055489016281182360:
+  if ctx.channel.id in corresponding_channels.values():
     response = requests.get(f"https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q={question}&site=stackoverflow&key={API_KEY}")
     data = response.json()
 
@@ -391,7 +399,7 @@ async def question(ctx, *, question):
     else:
       await ctx.send("I'm sorry, I could not find any similar posted question to that question on Stack Overflow.")
   else:
-    await ctx.send("Please use this command in the <#1055489016281182360> channel.")
+    await ctx.send(f"Please use this command in the <#{corresponding_channels[ctx.guild.id]}> channel.")
     return
 
 @question.error
