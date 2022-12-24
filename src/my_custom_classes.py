@@ -24,6 +24,11 @@ class MyButton(discord.ui.Button):
       self.view.children[1].label = 'Page: {}/{}'.format(self.view.current_page + 1, len(self.view.listOfEmbeds))
       await interaction.message.edit(view=self.view)
 
+    if self.custom_id in ['yes_most_upvoted_answer', 'no_most_upvoted_answer']:
+      if interaction.user != self.view.ctx.author:
+        await interaction.response.send_message('Only the author of the command can use this button.', ephemeral=True, delete_after=1.0)
+        return
+
     if self.custom_id == 'yes_most_upvoted_answer':
       await self.view.disable()
       data = requests.get(f'https://api.stackexchange.com/2.3/questions/{self.view.question_id}/answers?order=desc&sort=activity&site=stackoverflow&filter=3S33_h6y(QsUT2q4X').json()
@@ -53,7 +58,7 @@ class MyButton(discord.ui.Button):
       if len(most_upvoted_answer_body) > 1000:
         most_upvoted_answer_body = most_upvoted_answer_body[:900] + f'...\n\n[Read more]({most_upvoted_answer_link})'
 
-      embed = discord.Embed(title=most_upvoted_answer_title, color=0x70e68a)
+      embed = discord.Embed(title=most_upvoted_answer_title, url=most_upvoted_answer_link, color=0x70e68a)
       embed.add_field(name='Answered by:', value=f'[**{most_upvoted_answer_owner}**]({most_upvoted_answer_owner_link})')
       embed.add_field(name='Upvotes:', value=most_upvoted_answer_up_vote_count)
       embed.add_field(name='Downvotes:', value=most_upvoted_answer_down_vote_count)
@@ -63,7 +68,7 @@ class MyButton(discord.ui.Button):
       await interaction.response.send_message(embed=embed)
 
     elif self.custom_id == 'no_most_upvoted_answer':
-      await interaction.response.send_message('Ok, I will not show the most upvoted answer.', ephemeral=True)
+      await interaction.response.send_message('Ok, I will not show the most upvoted answer.')
       await self.view.disable()
 
     if self.custom_id == 'rock' or self.custom_id == 'scissors' or self.custom_id == 'paper':
@@ -77,7 +82,6 @@ class MyButton(discord.ui.Button):
         await self.view.enable()
       if len(self.view.players_choices) == 2:
         await self.view.get_winner()
-
 
 class ViewForHelpCommand(discord.ui.View):
   def __init__(self, *, message, listOfEmbeds : list[discord.Embed], timeout = 30):
@@ -195,14 +199,19 @@ class SelectStackOverflowQuestion(discord.ui.Select):
     self.converter = converter
 
   async def callback(self, interaction: discord.Interaction):
-    await interaction.response.send_message("Loading...", ephemeral=True)
+    if interaction.user != self.ctx.author:
+      await interaction.response.send_message("You are not the author of this command.", ephemeral=True, delete_after=1.0)
+      return
+    await interaction.response.send_message("Loading...")
     question_id = self.values[0]
     response = requests.get(f"https://api.stackexchange.com/2.3/questions/{question_id}?order=desc&sort=activity&site=stackoverflow")
     data = response.json()
 
     if data["items"]:
+      question = data['items'][0]['title']
       if data["items"][0]["answer_count"] == 0:
-        await interaction.edit_original_response(content="This question has no answers yet.")
+        await interaction.edit_original_response(content=f'The question: **{question}** has no answers yet.')
+        await self.view.disable()
         return
       top_answer_id = data["items"][0].get("accepted_answer_id", None)
 
@@ -220,9 +229,9 @@ class SelectStackOverflowQuestion(discord.ui.Select):
 
         markdown_answer = self.converter.handle(answer).strip()
         if len(markdown_answer) > 1000:
-          markdown_answer = markdown_answer[:900] + f"...\n\n[Read more]({answer_link})"
+          markdown_answer = markdown_answer[:800] + f"...\n\n[Read more]({answer_link})"
 
-        embed = discord.Embed(title=question, color=0x00ff00)
+        embed = discord.Embed(title=question, url=answer_link, color=0x00ff00)
         embed.add_field(name="Answered by", value=f"[{answer_owner_name}]({answer_owner_profile_link})")
         embed.add_field(name="Upvotes", value=answer_up_vote_count)
         embed.add_field(name="Downvotes", value=answer_down_vote_count)
@@ -231,18 +240,30 @@ class SelectStackOverflowQuestion(discord.ui.Select):
         embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
         await interaction.edit_original_response(content="Here is the accepted answer to your question:", embed=embed)
       else:
-        await interaction.edit_original_response(content="I'm sorry, there is no accepted answer to that question on Stack Overflow.")
-        message = await self.ctx.send("**Do you want to get the most upvoted answer?**")
+        await interaction.edit_original_response(content=f"I'm sorry, there is no accepted answer to the question: **{question}** on Stack Overflow.")
+        message = await self.ctx.send(f"{self.view.ctx.author.mention} **Do you want to get the most upvoted answer?**")
         view = ViewForYesOrNoMostUpvotedAnswer(self.ctx, question_id, message, self.converter)
         await message.edit(view=view)
     else:
-      await interaction.edit_original_response(content="I'm sorry, I could not find any answers to that question on Stack Overflow.")
-    self.view.stop()
+      await interaction.edit_original_response(content=f"I'm sorry, I could not find any answers to the question: **{question}** on Stack Overflow.")
+    await self.view.disable()
 
 class ViewForQuestionCommand(discord.ui.View):
-  def __init__(self, ctx : commands.Context, questions : list[str], questions_id : list[int], converter : html2text.HTML2Text):
-    super().__init__()
-    self.add_item(SelectStackOverflowQuestion(ctx, questions, questions_id, converter))
+  def __init__(self, ctx : commands.Context, questions : list[str], questions_id : list[int], message: discord.Message, converter : html2text.HTML2Text, timeout = 15):
+    super().__init__(timeout=timeout)
+    self.ctx = ctx
+    self.message = message
+    self.add_item(SelectStackOverflowQuestion(ctx, questions, questions_id, converter))    
+
+  async def disable(self):
+    await self.message.delete()
+    self.stop()
+
+  async def on_timeout(self):
+    await self.ctx.message.delete()
+    await self.message.delete()
+    await self.ctx.send(f"{self.ctx.author.mention} You took too long to select a question. Please try again.", delete_after=5)
+    self.stop()
 
 class ViewForYesOrNoMostUpvotedAnswer(discord.ui.View):
   def __init__(self, ctx : commands.Context, question_id : int, message : discord.Message, converter : html2text.HTML2Text, timeout = 15):
@@ -260,5 +281,10 @@ class ViewForYesOrNoMostUpvotedAnswer(discord.ui.View):
     await self.message.edit(view=self)
     self.stop()
 
+  async def delete(self):
+    await self.message.delete()
+    self.stop()
+
   async def on_timeout(self):
-    await self.disable()
+    await self.delete()
+    await self.ctx.send(f"{self.ctx.author.mention} You took too long to select an option. Please try again.", delete_after=5)

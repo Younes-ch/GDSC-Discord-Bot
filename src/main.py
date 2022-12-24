@@ -4,6 +4,7 @@ from discord.ext import commands
 from my_custom_classes import *
 from dotenv import load_dotenv
 from discord.ext import tasks
+import urllib.parse
 import html2text
 import discord
 import requests
@@ -379,7 +380,7 @@ async def question(ctx, *, question):
     828940910053556224: 1055489016281182360,
     783404400416391189: 1056268271323709451,
   }
-  question = '"' + question.lower() + '"'
+  question = '"' + urllib.parse.quote(question.lower()) + '"'
   API_KEY = os.getenv('STACKOVERFLOW_API_KEY')
   if ctx.channel.id in corresponding_channels.values():
     response = requests.get(f"https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q={question}&site=stackoverflow&key={API_KEY}")
@@ -394,8 +395,9 @@ async def question(ctx, *, question):
         question_title = converter.handle(data["items"][i]["title"]).strip()[:97] + "..."
         questions.append(question_title)
         questions_id.append(data["items"][i]["question_id"])
-      view = ViewForQuestionCommand(ctx, questions, questions_id, converter)
-      await ctx.send("Please select a similar question from the dropdown menu below.", view=view)
+      message : discord.Message = await ctx.send("Please select a similar question from the dropdown menu below.")
+      view = ViewForQuestionCommand(ctx, questions, questions_id, message, converter)
+      await message.edit(view=view)
     else:
       await ctx.send("I'm sorry, I could not find any similar posted question to that question on Stack Overflow.")
   else:
