@@ -249,11 +249,11 @@ async def on_member_update(before, after):
       except discord.errors.Forbidden:
         await after.send('**Event Speaker** Role has just been __added__ to your roles in **{}** server, please go ahead and add **[Event Speaker]** *tag* to your nickname'.format(after.guild.name))
   elif "Event Speaker" in before_roles and "Event Speaker" not in after_roles:
-    if "Event Speaker" in after.display_name:
+    if "[Event Speaker]" in after.display_name:
       try:
- 	      await after.edit(nick=" ".join(before.display_name.split()[2:]))
+        await after.edit(nick=after.display_name.replace("[Event Speaker] ", ""))
       except discord.errors.Forbidden:
-        await after.send('**Event Speaker** Role has just been __removed__ from your roles in **{}** server, you can remove the **[Event Speaker]** *tag* from your nickname!'.format(after.guild.name))
+        await after.send('**Event Speaker** Role has just been __removed__ from your roles in **{}** server, please go ahead and remove **[Event Speaker]** *tag* from your nickname'.format(after.guild.name))
 
 invites = {}
 
