@@ -2,3 +2,4 @@ discord-py
 pillow
 PyNacl
 requests
+html2text

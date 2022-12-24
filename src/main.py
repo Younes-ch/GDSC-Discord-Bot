@@ -1,7 +1,10 @@
 from PIL import Image, ImageFont, ImageDraw
+from my_custom_functions import *
 from discord.ext import commands
-from discord.ext import tasks
+from my_custom_classes import *
 from dotenv import load_dotenv
+from discord.ext import tasks
+import html2text
 import discord
 import requests
 import discord
@@ -16,6 +19,24 @@ logging.basicConfig(level=logging.INFO)
 activity = discord.Activity(type=discord.ActivityType.listening, name="&help")
 bot = commands.Bot(command_prefix='&', intents=intents, activity=activity)
 bot.remove_command('help')
+
+@bot.event
+async def on_ready():
+  print('------')
+  print('Logged in as')
+  print(bot.user.name)
+  print(bot.user.id)
+  print('------')
+  member_count.start()
+  for guild in bot.guilds:
+    if not guild.id in [828940910053556224, 783404400416391189]:
+      await guild.owner.send(':rolling_eyes: Sorry, I left `{}` because I\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
+      await guild.leave()
+    else:
+      invites[guild.id] = await guild.invites()
+
+# -------------------------------------- Bot commands -------------------------------------- #
+
 cmds = [
   {
     'name' : 'avatar',  
@@ -83,11 +104,123 @@ cmds = [
     'dis' : 'Shows detailed information about the server where the command was called.'
   },
   {
+    "name" : "question",
+    "args" : "[question]",
+    "dis" : "Fetches a similar question from stackoverflow and returns the correct answer."
+  },
+  {
     "name" : 'help', 
     'args' : '[command]',
     'dis' : 'Shows this message if no command was provided.'
   }
 ]
+
+# ------------------------------------- Help command ------------------------------------------- #
+
+#help command
+@bot.group(invoke_without_command=True)
+async def help(ctx):
+  embed1 = discord.Embed(title='Commands:', color=0x70e68a)
+  embed2 = discord.Embed(title='Commands:', color=0x70e68a)
+  embed3 = discord.Embed(title='Commands:', color=0x70e68a)
+  embed1.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
+  embed1.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
+  embed2.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
+  embed2.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
+  embed3.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
+  embed3.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
+  global cmds
+  counter = 0
+  for cmd in cmds:
+    counter += 1
+    if counter <= 5:
+      embed1.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
+    elif counter > 5 and counter <= 10:
+      embed2.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
+    else:
+      embed3.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
+    listOfEmbeds = [embed1, embed2, embed3] 
+    
+  message = await ctx.send(embed=listOfEmbeds[0])
+  view = ViewForHelpCommand(message=message, listOfEmbeds=listOfEmbeds)
+  await message.edit(view=view)
+
+@help.command()
+async def avatar(ctx):
+  embed = generate_embed('Avatar', 'Returns the avatar of the member mentioned or the user who called the command (in case no one was mentioned).', ctx.author, {'usage' : ['&avatar', '&avatar server', '&avatar [user]'], 'examples' : ['&avatar', '&avatar server', '&avatar {}'.format(ctx.author.mention)]})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def meme(ctx):
+  embed = generate_embed('Meme', 'Returns a random meme from the subbredit you provided or Dankmemes/memes/me_irl (in case no Subbredit name was provided).', ctx.author, {'usage' : ['&meme', '&meme [subreddit name]'], 'examples' : ['&meme', '&meme me_irl']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def weather(ctx):
+  embed = generate_embed('Weather', 'Returns current weather in the city mentioned or Sousse if no city was mentioned.', ctx.author, {'usage' : ['&weather', '&weather [city name]'], 'examples' : ['&weather', '&weather Monastir']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def say(ctx):
+  embed = generate_embed('Say', 'Sends the message that the user provided as the bot in the text channel.', ctx.author, {'usage' : ['&say [Text Channel] [message]'], 'examples' : ['&say general Hi!', '&say {} Hi!'.format(ctx.channel.mention), '&say 195605500488384512 Hi!']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def fact(ctx):
+  embed = generate_embed('Fact', 'Return a random fact', ctx.author, {'usage' : ['&fact'], 'examples' : ['&fact']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def corona(ctx):
+  embed = generate_embed('Corona', 'Returns today''s COVID-19 statistics of the mentioned country (Tunisia if none was mentioned).', ctx.author, {'usage' : ['&corona', '&corona [country name]'], 'examples' : ['&corona', '&corona Morocco']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def snipe(ctx):
+  embed = generate_embed('Snipe (Certain Permission are Required)', 'Returns last deleted messages in the channel where the command was called.', ctx.author, {'usage' : ['&snipe'], 'examples' : ['&snipe']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def rps(ctx):
+  embed = generate_embed('RPS', 'Creates a RPS game between you and the mentioned member.', ctx.author, {'usage' : ['&rps [member]'], 'examples' : ['&rps {0.mention}'.format(ctx.author), '&rps 195605500488384512']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def joke(ctx):
+  embed = generate_embed('Joke', 'Returns a random joke contains the word (word argument can be omitted).', ctx.author, {'usage' : ['&joke', '&joke [word]'], 'examples' : ['&joke', '&joke christmas']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def ping(ctx):
+  embed = generate_embed('Ping', 'Returns Bot\'s current client ping.', ctx.author, {'usage' : ['&ping'], 'examples' : ['&ping']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def quote(ctx):
+  embed = generate_embed('Quote', 'Returns a random quote.', ctx.author, {'usage' : ['&quote'], 'examples' : ['&quote']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def userinfo(ctx):
+  embed = generate_embed('User Info', 'Shows detailed information about the mentioned member or the user in case no one was mentioned.', ctx.author, {'usage' : ['&userinfo', '&userinfo [member]'], 'examples' : ['&userinfo', '&userinfo {0.mention}'.format(ctx.author), '&userinfo 195605500488384512']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def serverinfo(ctx):
+  embed = generate_embed('Server Info', 'Shows detailed information about the server where the command was called.', ctx.author, {'usage' : ['&serverinfo'], 'examples' : ['&serverinfo']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def question(ctx):
+  embed = generate_embed('Question', 'Returns the top 5 similar questions from StackOverflow.', ctx.author, {'usage' : ['&question [question]'], 'examples' : ['&question How to create a bot?']})
+  await ctx.send(embed=embed)
+
+@help.command()
+async def help(ctx):
+  embed = generate_embed('Help', 'Shows this message if no command was provided.', ctx.author, {'usage' : ['&help', '&help [command]'], 'examples' : ['&help', '&help avatar']})
+  await ctx.send(embed=embed)
+
+# ----------------------------------------- Events -------------------------------------------------
 
 @tasks.loop(seconds=30.0)
 async def member_count():
@@ -104,26 +237,6 @@ async def member_count():
     if not found:
       await guild.create_voice_channel(name='Member count: {}'.format(guild.member_count), overwrites=overwrites, position=0, user_limit=0)
   print('Updated')
-
-
-invites = {}
-
-
-@bot.event
-async def on_ready():
-  print('------')
-  print('Logged in as')
-  print(bot.user.name)
-  print(bot.user.id)
-  print('------')
-  member_count.start()
-  for guild in bot.guilds:
-    if not guild.id in [828940910053556224, 783404400416391189]:
-      await guild.owner.send(':rolling_eyes: Sorry, I left `{}` because I\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
-      await guild.leave()
-    else:
-      invites[guild.id] = await guild.invites()
-
 
 @bot.event
 async def on_member_update(before, after):
@@ -142,11 +255,7 @@ async def on_member_update(before, after):
       except discord.errors.Forbidden:
         await after.send('**Event Speaker** Role has just been __removed__ from your roles in **{}** server, you can remove the **[Event Speaker]** *tag* from your nickname!'.format(after.guild.name))
 
-def find_invite_by_code(invite_list, code):
-  for inv in invite_list:     
-      if inv.code == code:
-          return inv
-
+invites = {}
 
 @bot.event
 async def on_member_join(member):
@@ -172,8 +281,8 @@ async def on_member_join(member):
     draw.ellipse((0, 0, 148, 140), fill=255, outline=0, width=2)
     mask_im.save('mask_circle.png', quality=95)
 
-    background = Image.open('GDSC Welcome Template.png')
-    font = ImageFont.truetype("Google-Sans.ttf", 54)
+    background = Image.open('src/Assets/GDSC Welcome Template.png')
+    font = ImageFont.truetype("src/Assets/Google-Sans.ttf", 54)
     background_copy = background.copy()
     background_copy.paste(avatar, (951, 596), mask_im)
     draw = ImageDraw.Draw(background_copy)
@@ -215,147 +324,17 @@ async def on_guild_join(guild):
     await guild.owner.send(':rolling_eyes: Sorry, i left `{}` because i\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
     await guild.leave()
 
-def get_random_quote():
-  response = requests.get('https://zenquotes.io/api/random')
-  json_data = json.loads(response.text)
-  random_quote = f'{json_data[0]["q"]}|{json_data[0]["a"]}'
-  return random_quote
+last_msg = []
+@bot.event
+async def on_message_delete(message):
+  global last_msg
+  if not message.author.bot:
+    last_msg.append(message)
+  await asyncio.sleep(60)
+  if len(last_msg) > 10:
+    last_msg.clear()
 
-
-def get_random_fact():
-  response = requests.get('https://uselessfacts.jsph.pl/random.json?language=en')
-  json_data = json.loads(response.text)
-  useless_fact = f'{json_data["text"]}'
-  return useless_fact
-  
-class MyButton(discord.ui.Button):
-  def __init__(self, *, label, style, custom_id, disabled=False):
-    super().__init__(label=label, style=style, custom_id=custom_id, disabled=disabled)
-
-  async def callback(self, interaction: discord.Interaction):
-    if self.custom_id == 'next':
-      self.view.current_page += 1
-      if self.view.current_page == len(self.view.listOfEmbeds):
-        self.view.current_page = 0
-      await interaction.response.edit_message(embed=self.view.listOfEmbeds[self.view.current_page])
-    elif self.custom_id == 'prev':
-      self.view.current_page -= 1
-      if self.view.current_page < 0:
-        self.view.current_page = len(self.view.listOfEmbeds) - 1
-      await interaction.response.edit_message(embed=self.view.listOfEmbeds[self.view.current_page])
-    
-    if "Page" in self.view.children[1].label:
-      self.view.children[1].label = 'Page: {}/{}'.format(self.view.current_page + 1, len(self.view.listOfEmbeds))
-      await interaction.message.edit(view=self.view)
-
-    if self.custom_id == 'rock' or self.custom_id == 'scissors' or self.custom_id == 'paper':
-      await interaction.response.send_message('You chose **`{}`**, Please wait for the other oponent to choose...'.format(self.label))
-      self.view.players_choices.append(self.label)
-      await self.view.disable()
-      if interaction.user == self.view.author:
-        player2_msg = await self.view.member.send(embed=self.view.embed)
-        self.view.player_msg = player2_msg
-        await player2_msg.edit(view=self.view)
-        await self.view.enable()
-      if len(self.view.players_choices) == 2:
-        await self.view.get_winner()
-
-class ViewForHelpCommand(discord.ui.View):
-  def __init__(self, *, message, listOfEmbeds : list[discord.Embed], timeout = 30):
-    super().__init__(timeout=timeout)
-    self.message = message
-    self.listOfEmbeds = listOfEmbeds
-    self.current_page = 0
-    self.add_item(MyButton(label='Prev', style=discord.ButtonStyle.green, custom_id='prev'))
-    self.add_item(MyButton(label='Page: {}/{}'.format(self.current_page + 1, len(self.listOfEmbeds)), style=discord.ButtonStyle.grey, custom_id='page', disabled=True))
-    self.add_item(MyButton(label='Next', style=discord.ButtonStyle.green, custom_id='next'))
-
-  async def on_timeout(self):
-    self.children[0].disabled = True
-    self.children[2].disabled = True
-    await self.message.edit(view=self)
-
-class ViewForRPSCommand(discord.ui.View):
-  def __init__(self, *, ctx, author, message, member, player_msg, embed, timeout = 30):
-    super().__init__(timeout=timeout)
-    self.ctx = ctx
-    self.author = author
-    self.message = message
-    self.member = member
-    self.player_msg = player_msg
-    self.embed = embed
-    self.players_choices = []
-    self.add_item(MyButton(label='🪨', style=discord.ButtonStyle.grey, custom_id='rock'))
-    self.add_item(MyButton(label='🧻', style=discord.ButtonStyle.blurple, custom_id='paper'))
-    self.add_item(MyButton(label='✂️', style=discord.ButtonStyle.red, custom_id='scissors'))
-
-  async def on_timeout(self):
-    self.children[0].disabled = True
-    self.children[1].disabled = True
-    self.children[2].disabled = True
-    await self.ctx.send('{}, {}: The game has ended due to inactivity!'.format(self.ctx.author.mention, self.member.mention))
-    await self.player_msg.delete()
-
-  async def disable(self):
-    self.children[0].disabled = True
-    self.children[1].disabled = True
-    self.children[2].disabled = True
-    await self.player_msg.edit(view=self)
-
-  async def enable(self):
-    self.children[0].disabled = False
-    self.children[1].disabled = False
-    self.children[2].disabled = False
-    await self.player_msg.edit(view=self)
-
-  async def get_winner(self):
-    if self.players_choices[0] == '🪨' and self.players_choices[1] == '🧻':
-      winner = self.member
-    elif self.players_choices[0] == '🪨' and self.players_choices[1] == '✂️':
-      winner = self.author
-    elif self.players_choices[0] == '🧻' and self.players_choices[1] == '🪨':
-      winner = self.author
-    elif self.players_choices[0] == '🧻' and self.players_choices[1] == '✂️':
-      winner = self.member
-    elif self.players_choices[0] == '✂️' and self.players_choices[1] == '🪨':
-      winner = self.member
-    elif self.players_choices[0] == '✂️' and self.players_choices[1] == '🧻':
-      winner = self.author
-    elif self.players_choices[0] == self.players_choices[1]:
-      winner = None
-
-    if winner == None:
-      embed = discord.Embed(title='Results', color=self.author.top_role.color)
-      embed.add_field(name=f'{self.players_choices[0]} == {self.players_choices[1]}', value='**It\'s a Tie!**', inline=False)
-      embed.set_author(name='Game Over!')
-      embed.set_thumbnail(url='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6R63nEBSwQBGBICTHQrcbC9SAd_tdLR9k3w&usqp=CAU')
-      embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/788852766c106e9f8a88085a82651bd7.png?size=1024')
-      await self.message.delete()
-      await self.ctx.send(embed=embed)
-      await self.author.send(embed=embed)
-      await self.member.send(embed=embed)
-    elif winner == self.author:
-        embed = discord.Embed(title='Results', color=self.author.top_role.color)
-        embed.add_field(name=f'{self.players_choices[0]} > {self.players_choices[1]}', value=f'🥳 **{self.author.name}** Won! 🥳')
-        embed.set_author(name='Game Over!')
-        embed.set_thumbnail(url='https://www.pinclipart.com/picdir/big/576-5762132_player-1-wins-clipart.png')
-        embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/788852766c106e9f8a88085a82651bd7.png?size=1024')
-        await self.message.delete()
-        await self.ctx.send(embed=embed)
-        await self.author.send(embed=embed)
-        await self.member.send(embed=embed)
-    else:
-        embed = discord.Embed(title='Results', color=self.author.top_role.color)
-        embed.add_field(name=f'{self.players_choices[1]} > {self.players_choices[0]}', value=f'🥳 **{self.member.name}** Won! 🥳')
-        embed.set_author(name='Game Over!')
-        embed.set_thumbnail(url='http://learnlearn.uk/scratch/wp-content/uploads/sites/7/2018/01/player2png.png')
-        embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/788852766c106e9f8a88085a82651bd7.png?size=1024')
-        await self.message.delete()
-        await self.ctx.send(embed=embed)
-        await self.author.send(embed=embed)
-        await self.member.send(embed=embed)
-    self.players_choices.clear()
-    self.stop()
+# -------------------------------------------- Commands --------------------------------------------
 
 #rps command
 @bot.command()
@@ -389,125 +368,43 @@ async def rps_error(ctx, error : commands.CommandError):
   else:
     print(error)
 
-#help command
-@bot.group(invoke_without_command=True)
-async def help(ctx):
-  embed1 = discord.Embed(title='Commands:', color=0x70e68a)
-  embed2 = discord.Embed(title='Commands:', color=0x70e68a)
-  embed3 = discord.Embed(title='Commands:', color=0x70e68a)
-  embed1.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
-  embed1.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
-  embed2.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
-  embed2.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
-  embed3.set_footer(text='Requested by {}'.format(ctx.author), icon_url = ctx.author.display_avatar.url)
-  embed3.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
-  global cmds
-  counter = 0
-  for cmd in cmds:
-    counter += 1
-    if counter <= 5:
-      embed1.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
-    elif counter > 5 and counter <= 10:
-      embed2.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
+# question command
+@bot.command()
+async def question(ctx, *, question):
+  question = '"' + question.lower() + '"'
+  API_KEY = os.getenv('STACKOVERFLOW_API_KEY')
+  if ctx.channel.id == 1055489016281182360:
+    response = requests.get(f"https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q={question}&site=stackoverflow&key={API_KEY}")
+    data = response.json()
+
+    converter = html2text.HTML2Text()
+
+    if data["items"]:
+      questions = []
+      questions_id = []
+      for i in range(min(5, len(data["items"]))):
+        question_title = converter.handle(data["items"][i]["title"]).strip()[:97] + "..."
+        questions.append(question_title)
+        questions_id.append(data["items"][i]["question_id"])
+      view = ViewForQuestionCommand(ctx, questions, questions_id, converter)
+      await ctx.send("Please select a similar question from the dropdown menu below.", view=view)
     else:
-      embed3.add_field(name=f'{cmd["name"].capitalize()}:', value=f'`&{cmd["name"]} {cmd["args"]}` : {cmd["dis"]}', inline=False)
-    listOfEmbeds = [embed1, embed2, embed3] 
-    
-  message = await ctx.send(embed=listOfEmbeds[0])
-  view = ViewForHelpCommand(message=message, listOfEmbeds=listOfEmbeds)
-  await message.edit(view=view)
+      await ctx.send("I'm sorry, I could not find any similar posted question to that question on Stack Overflow.")
+  else:
+    await ctx.send("Please use this command in the <#1055489016281182360> channel.")
+    return
 
-def generate_embed(title, description, author, fields : dict, color = 0x70e68a) -> discord.Embed:
-  embed = discord.Embed(title=title, description=description, color = color)
-  embed.add_field(name='Usage:', value="\n".join(fields['usage']))
-  embed.add_field(name='Examples:', value="\n".join(fields['examples']))
-  embed.set_footer(text='Requested by {}'.format(author), icon_url=author.display_avatar.url)
+@question.error
+async def question_error(ctx : commands.Context, error: commands.CommandError):
+  if isinstance(error, commands.MissingRequiredArgument):
+    await ctx.message.add_reaction('❌')
+    embed = discord.Embed(title='Missing Arguments Error', description=':no_entry: - You are missing the required arguments to run this command!', color=0xe74c3c)
+    embed.add_field(name='Command:', value='**&question `[question]`**')
+    await ctx.send(embed=embed)
+  else:
+    print(error)
 
-  return embed
-
-  
-@help.command()
-async def avatar(ctx):
-  embed = generate_embed('Avatar', 'Returns the avatar of the member mentioned or the user who called the command (in case no one was mentioned).', ctx.author, {'usage' : ['&avatar', '&avatar server', '&avatar [user]'], 'examples' : ['&avatar', '&avatar server', '&avatar {}'.format(ctx.author.mention)]})
-  await ctx.send(embed=embed)
-
-
-@help.command()
-async def meme(ctx):
-  embed = generate_embed('Meme', 'Returns a random meme from the subbredit you provided or Dankmemes/memes/me_irl (in case no Subbredit name was provided).', ctx.author, {'usage' : ['&meme', '&meme [subreddit name]'], 'examples' : ['&meme', '&meme me_irl']})
-  await ctx.send(embed=embed)
-
-
-@help.command()
-async def weather(ctx):
-  embed = generate_embed('Weather', 'Returns current weather in the city mentioned or Sousse if no city was mentioned.', ctx.author, {'usage' : ['&weather', '&weather [city name]'], 'examples' : ['&weather', '&weather Monastir']})
-  await ctx.send(embed=embed)
-
-
-@help.command()
-async def say(ctx):
-  embed = generate_embed('Say', 'Sends the message that the user provided as the bot in the text channel.', ctx.author, {'usage' : ['&say [Text Channel] [message]'], 'examples' : ['&say general Hi!', '&say {} Hi!'.format(ctx.channel.mention), '&say 195605500488384512 Hi!']})
-  await ctx.send(embed=embed)
-
-
-@help.command()
-async def fact(ctx):
-  embed = generate_embed('Fact', 'Return a random fact', ctx.author, {'usage' : ['&fact'], 'examples' : ['&fact']})
-  await ctx.send(embed=embed)
-
-
-@help.command()
-async def corona(ctx):
-  embed = generate_embed('Corona', 'Returns today''s COVID-19 statistics of the mentioned country (Tunisia if none was mentioned).', ctx.author, {'usage' : ['&corona', '&corona [country name]'], 'examples' : ['&corona', '&corona Morocco']})
-  await ctx.send(embed=embed)
-
-
-@help.command()
-async def snipe(ctx):
-  embed = generate_embed('Snipe (Certain Permission are Required)', 'Returns last deleted messages in the channel where the command was called.', ctx.author, {'usage' : ['&snipe'], 'examples' : ['&snipe']})
-  await ctx.send(embed=embed)
-
-
-@help.command()
-async def rps(ctx):
-  embed = generate_embed('RPS', 'Creates a RPS game between you and the mentioned member.', ctx.author, {'usage' : ['&rps [member]'], 'examples' : ['&rps {0.mention}'.format(ctx.author), '&rps 195605500488384512']})
-  await ctx.send(embed=embed)
-
-@help.command()
-async def joke(ctx):
-  embed = generate_embed('Joke', 'Returns a random joke contains the word (word argument can be omitted).', ctx.author, {'usage' : ['&joke', '&joke [word]'], 'examples' : ['&joke', '&joke christmas']})
-  await ctx.send(embed=embed)
-
-@help.command()
-async def ping(ctx):
-  embed = generate_embed('Ping', 'Returns Bot\'s current client ping.', ctx.author, {'usage' : ['&ping'], 'examples' : ['&ping']})
-  await ctx.send(embed=embed)
-
-@help.command()
-async def quote(ctx):
-  embed = generate_embed('Quote', 'Returns a random quote.', ctx.author, {'usage' : ['&quote'], 'examples' : ['&quote']})
-  await ctx.send(embed=embed)
-
-
-@help.command()
-async def userinfo(ctx):
-  embed = generate_embed('User Info', 'Shows detailed information about the mentioned member or the user in case no one was mentioned.', ctx.author, {'usage' : ['&userinfo', '&userinfo [member]'], 'examples' : ['&userinfo', '&userinfo {0.mention}'.format(ctx.author), '&userinfo 195605500488384512']})
-  await ctx.send(embed=embed)
-
-
-
-@help.command()
-async def serverinfo(ctx):
-  embed = generate_embed('Server Info', 'Shows detailed information about the server where the command was called.', ctx.author, {'usage' : ['&serverinfo'], 'examples' : ['&serverinfo']})
-  await ctx.send(embed=embed)
-
-@help.command()
-async def help(ctx):
-  embed = generate_embed('Help', 'Shows this message if no command was provided.', ctx.author, {'usage' : ['&help', '&help [command]'], 'examples' : ['&help', '&help avatar']})
-  await ctx.send(embed=embed)
-
-
-#Server Info Command
+# Server Info Command
 @bot.command(name='serverinfo')
 async def server_info(ctx):
   guild_name =ctx.guild.name
@@ -542,8 +439,7 @@ async def server_info(ctx):
   embed.set_footer(text=footer_text)
   await ctx.reply(embed=embed, mention_author=False)
 
-
-#User info command
+# User info command
 @bot.command(name='userinfo')
 async def user_info(ctx, *, member : discord.Member = None):
   statuses = {
@@ -576,7 +472,7 @@ async def user_info_error(ctx, error : commands.CommandError):
     await ctx.send(embed=embed)
     print(error)
 
-#weather command
+# weather command
 @bot.command()
 async def weather(ctx, *, city : str = None):
   url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}'.format("%20".join(city.split()), os.getenv('WEATHER_API_KEY')) if city else 'https://api.openweathermap.org/data/2.5/weather?q=Sousse&appid={}'.format(os.getenv('WEATHER_API_KEY'))
@@ -610,7 +506,7 @@ async def weather(ctx, *, city : str = None):
     embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
     await ctx.reply(embed=embed, mention_author=False)
 
-#meme command
+# meme command
 @bot.command()
 async def meme(ctx, *, subreddit : str = None):
   url = ' https://meme-api.com/gimme' if not subreddit else 'https://meme-api.com/gimme/{}'.format("".join(subreddit.lower()))
@@ -632,7 +528,7 @@ async def meme(ctx, *, subreddit : str = None):
     embed = discord.Embed(description=f':rolling_eyes: - {ctx.author.name} I can\'t find a subreddit named **{subreddit}**', color = 0xe74c3c)
     await ctx.reply(embed=embed, mention_author=False)
 
-#fact command
+# fact command
 @bot.command()
 async def fact(ctx):
   embed = discord.Embed(title='Random Fact:', description=get_random_fact(), color=ctx.author.top_role.color)
@@ -640,19 +536,8 @@ async def fact(ctx):
   embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
   await ctx.reply(embed=embed, mention_author=False)
 
-last_msg = []
-@bot.event
-async def on_message_delete(message):
-  global last_msg
-  if not message.author.bot:
-    last_msg.append(message)
-  await asyncio.sleep(60)
-  if len(last_msg) > 10:
-    last_msg.clear()
-
-#snipe command
+# snipe command
 @bot.command()
-@commands.guild_only()
 @commands.has_permissions(manage_messages=True)
 async def snipe(ctx : commands.Context):
   deleted_messages_in_this_channel = [x for x in last_msg if x.channel.id == ctx.message.channel.id]
@@ -677,13 +562,13 @@ async def snipe_error(ctx : commands.Context, error : commands.CommandError):
     embed = discord.Embed(title='Permission Error', description=':no_entry: - You are missing the required permissions to run this command!', color=0xe74c3c)
     await ctx.send(embed=embed)
 
-#ping command
+# ping command
 @bot.command()
 @commands.guild_only()
 async def ping(ctx):
   await ctx.reply(f'✅ {round(bot.latency * 1000)}ms!', mention_author=False)
 
-#joke command
+# joke command
 @bot.command()
 @commands.guild_only()
 async def joke(ctx, *, contains : str = ''):
@@ -699,7 +584,6 @@ async def joke(ctx, *, contains : str = ''):
     await ctx.message.add_reaction('❌')
     embed = discord.Embed(description=':no_entry: - {} !'.format(json_data['causedBy'][0]), color=0xe74c3c)  
   await ctx.reply(embed=embed, mention_author=False)
-
 
 #corona command
 @bot.command()
@@ -734,7 +618,6 @@ async def corona(ctx, *, country : str = ''):
     }
     response = requests.request("GET", url, headers=headers, params=querystring)
 
-    # country_code = json.loads(response.text)[0]['code'].lower()
     flag = json.loads(response.text)[0]['flag']
     embed = discord.Embed(title=f'Corona Statistics in {country} {flag}:', color=0xe74c3c)
     continent = json_data['response'][0]['continent']
@@ -759,7 +642,7 @@ async def corona(ctx, *, country : str = ''):
     embed.set_footer(text='Stay safe 🌸')
     await ctx.reply(embed=embed, mention_author=False)
 
-#avatar command
+# avatar command
 @bot.command()
 async def avatar(ctx, *, member : str = ''):
   if len(member) > 0:
@@ -822,7 +705,7 @@ async def avatar(ctx, *, member : str = ''):
     icon_url=member.display_avatar.url)
     await ctx.reply(embed = embed, mention_author=False)
 
-#say command
+# say command
 @bot.command(description='Sends the provided message.', aliases=['s'])
 @commands.guild_only()
 async def say(ctx, channel : discord.TextChannel, *, message : str = ''):
@@ -838,7 +721,6 @@ async def say(ctx, channel : discord.TextChannel, *, message : str = ''):
   else:
     raise commands.CommandError
   
-
 @say.error
 async def say_error(ctx : commands.Context, error : commands.CommandError):
   if isinstance(error, commands.ChannelNotFound):
@@ -850,8 +732,7 @@ async def say_error(ctx : commands.Context, error : commands.CommandError):
     embed.add_field(name='Command:', value='**&say `[Text Channel] [message]`**')
     await ctx.send(embed=embed)
 
-
-#quote command
+# quote command
 @bot.command(description='Returns a random quote.')
 async def quote(ctx):
   quote = get_random_quote().split('|')[0]
@@ -863,5 +744,7 @@ async def quote(ctx):
   embed.add_field(name='Author:', value=f':book: *{author}*')
   embed.set_footer(text='Requested by {}'.format(ctx.author), icon_url=ctx.author.display_avatar.url)
   await ctx.send(embed=embed)
+
+# -------------------------------------------- Run Bot -------------------------------------------- #
 
 bot.run(os.getenv('TOKEN'))
