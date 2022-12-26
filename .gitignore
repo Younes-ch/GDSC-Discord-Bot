@@ -1,6 +1,2 @@
-*.lock
-*.toml
-*alive.py
 .env
 __pycache__
-.breakpoints
