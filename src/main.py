@@ -632,20 +632,20 @@ async def announce(ctx: commands.Context, *, message: str = ''):
   
 @announce.error
 async def announce_error(ctx : commands.Context, error : commands.CommandError):
-  if isinstance(error, commands.ChannelNotFound):
-    await ctx.message.add_reaction('❌')
-    embed = discord.Embed(description=':rolling_eyes: - **{}**, I couldn\'t find a text channel named **{}**!'.format(ctx.author.name, ctx.message.content.split()[1]), color=0xe74c3c)
-    await ctx.send(embed=embed)
-  elif isinstance(error, commands.MissingRequiredArgument):
+  if isinstance(error, commands.MissingRequiredArgument):
     embed = discord.Embed(title='Missing Arguments Error', description=':no_entry: - You are missing the required arguments to run this command!', color=0xe74c3c)
     embed.add_field(name='Command:', value='**&say `[Text Channel] [message]`**')
-    await ctx.send(embed=embed)
+    await ctx.author.send(embed=embed, delete_after=15)
   elif isinstance(error, commands.MissingPermissions):
     embed = discord.Embed(description=':no_entry: - **{}**, you don\'t have the required permissions to run this command!'.format(ctx.author.name), color=0xe74c3c)
-    await ctx.send(embed=embed)
+    await ctx.author.send(embed=embed, delete_after=15)
   elif isinstance(error, commands.CommandError):
     embed = discord.Embed(description=':no_entry: - **{}**, you didn\'t provide a message to send!'.format(ctx.author.name), color=0xe74c3c)
-    await ctx.send(embed=embed)
+    await ctx.author.send(embed=embed)
+  else:
+    embed = discord.Embed(description=':no_entry: - **{}**, an error occurred while running this command!'.format(ctx.author.name), color=0xe74c3c)
+    await ctx.author.send(embed=embed, delete_after=15)
+    print(error)
 
 
 # say command
