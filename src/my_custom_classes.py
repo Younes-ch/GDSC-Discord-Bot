@@ -1,3 +1,4 @@
+import asyncio
 from discord.ext import commands
 import html2text
 import requests
@@ -20,13 +21,16 @@ class MyButton(discord.ui.Button):
         self.view.current_page = len(self.view.listOfEmbeds) - 1
       await interaction.response.edit_message(embed=self.view.listOfEmbeds[self.view.current_page])
     
-    if "Page" in self.view.children[1].label:
-      self.view.children[1].label = 'Page: {}/{}'.format(self.view.current_page + 1, len(self.view.listOfEmbeds))
-      await interaction.message.edit(view=self.view)
+    if len(self.view.children) > 1:
+      if "Page" in self.view.children[1].label:
+        self.view.children[1].label = 'Page: {}/{}'.format(self.view.current_page + 1, len(self.view.listOfEmbeds))
+        await interaction.edit_original_response(embed=self.view.listOfEmbeds[self.view.current_page], view=self.view)
 
     if self.custom_id in ['yes_most_upvoted_answer', 'no_most_upvoted_answer']:
-      if interaction.user != self.view.ctx.author:
-        await interaction.response.send_message('Only the author of the command can use this button.', ephemeral=True, delete_after=1.0)
+      if interaction.user != self.view.interaction.user:
+        await interaction.response.send_message('Only the author of the command can use this button.', ephemeral=True)
+        await asyncio.sleep(1.0)
+        await interaction.delete_original_response()
         return
 
     if self.custom_id == 'yes_most_upvoted_answer':
@@ -72,21 +76,23 @@ class MyButton(discord.ui.Button):
       await self.view.disable()
 
     if self.custom_id == 'rock' or self.custom_id == 'scissors' or self.custom_id == 'paper':
-      await interaction.response.send_message('You chose **`{}`**, Please wait for the other oponent to choose...'.format(self.label))
       self.view.players_choices.append(self.label)
       await self.view.disable()
       if interaction.user == self.view.author:
-        player2_msg = await self.view.member.send(embed=self.view.embed)
+        await interaction.response.send_message(f'You chose **`{self.label}`**, Please wait for the other oponent to choose...')
+        player2_msg = await self.view.member.send(f'You have been challenged by {self.view.author} to a game of **Rock Paper Scissors**!', embed=self.view.embed)
         self.view.player_msg = player2_msg
         await player2_msg.edit(view=self.view)
         await self.view.enable()
+      else:
+        await interaction.response.send_message(f'You chose **`{self.label}`**')
       if len(self.view.players_choices) == 2:
         await self.view.get_winner()
 
 class ViewForHelpCommand(discord.ui.View):
-  def __init__(self, *, message, listOfEmbeds : list[discord.Embed], timeout = 30):
+  def __init__(self, *, interaction: discord.Interaction, listOfEmbeds : list[discord.Embed], timeout = 30):
     super().__init__(timeout=timeout)
-    self.message = message
+    self.interaction = interaction
     self.listOfEmbeds = listOfEmbeds
     self.current_page = 0
     self.add_item(MyButton(label='Prev', style=discord.ButtonStyle.green, custom_id='prev'))
@@ -96,14 +102,13 @@ class ViewForHelpCommand(discord.ui.View):
   async def on_timeout(self):
     self.children[0].disabled = True
     self.children[2].disabled = True
-    await self.message.edit(view=self)
+    await self.interaction.edit_original_response(embed=self.listOfEmbeds[self.current_page], view=self)
 
 class ViewForRPSCommand(discord.ui.View):
-  def __init__(self, *, ctx, author, message, member, player_msg, embed, timeout = 30):
+  def __init__(self, *, interaction: discord.Interaction, author: discord.Member, member, player_msg: discord.Message, embed: discord.Embed, timeout = 30):
     super().__init__(timeout=timeout)
-    self.ctx = ctx
+    self.interaction = interaction
     self.author = author
-    self.message = message
     self.member = member
     self.player_msg = player_msg
     self.embed = embed
@@ -116,8 +121,8 @@ class ViewForRPSCommand(discord.ui.View):
     self.children[0].disabled = True
     self.children[1].disabled = True
     self.children[2].disabled = True
-    await self.ctx.send('{}, {}: The game has ended due to inactivity!'.format(self.ctx.author.mention, self.member.mention))
-    await self.player_msg.delete()
+    await self.interaction.edit_original_response(content=f'{self.author.mention}, {self.member.mention}: The game has ended due to inactivity!', embed=None)
+    await self.player_msg.edit(view=self)
 
   async def disable(self):
     self.children[0].disabled = True
@@ -148,13 +153,12 @@ class ViewForRPSCommand(discord.ui.View):
       winner = None
 
     if winner == None:
-      embed = discord.Embed(title='Results', color=self.author.top_role.color)
+      embed = discord.Embed(title='Results', color=0xffffff)
       embed.add_field(name=f'{self.players_choices[0]} == {self.players_choices[1]}', value='**It\'s a Tie!**', inline=False)
       embed.set_author(name='Game Over!')
       embed.set_thumbnail(url='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6R63nEBSwQBGBICTHQrcbC9SAd_tdLR9k3w&usqp=CAU')
       embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/788852766c106e9f8a88085a82651bd7.png?size=1024')
-      await self.message.delete()
-      await self.ctx.send(embed=embed)
+      await self.interaction.followup.send(embed=embed)
       await self.author.send(embed=embed)
       await self.member.send(embed=embed)
     elif winner == self.author:
@@ -163,25 +167,23 @@ class ViewForRPSCommand(discord.ui.View):
         embed.set_author(name='Game Over!')
         embed.set_thumbnail(url='https://www.pinclipart.com/picdir/big/576-5762132_player-1-wins-clipart.png')
         embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/788852766c106e9f8a88085a82651bd7.png?size=1024')
-        await self.message.delete()
-        await self.ctx.send(embed=embed)
+        await self.interaction.followup.send(embed=embed)
         await self.author.send(embed=embed)
         await self.member.send(embed=embed)
     else:
-        embed = discord.Embed(title='Results', color=self.author.top_role.color)
+        embed = discord.Embed(title='Results', color=self.member.top_role.color)
         embed.add_field(name=f'{self.players_choices[1]} > {self.players_choices[0]}', value=f'🥳 **{self.member.name}** Won! 🥳')
         embed.set_author(name='Game Over!')
         embed.set_thumbnail(url='http://learnlearn.uk/scratch/wp-content/uploads/sites/7/2018/01/player2png.png')
         embed.set_footer(text='Game made by Younes#5003', icon_url='https://cdn.discordapp.com/avatars/387798722827780108/788852766c106e9f8a88085a82651bd7.png?size=1024')
-        await self.message.delete()
-        await self.ctx.send(embed=embed)
+        await self.interaction.followup.send(embed=embed)
         await self.author.send(embed=embed)
         await self.member.send(embed=embed)
     self.players_choices.clear()
     self.stop()
 
 class SelectStackOverflowQuestion(discord.ui.Select):
-  def __init__(self, ctx : commands.Context, questions : list[str], questions_id : list[int], converter : html2text.HTML2Text):
+  def __init__(self, interaction: discord.Interaction, questions : list[str], questions_id : list[int], converter : html2text.HTML2Text):
     mapping = {
       1: "1️⃣",
       2: "2️⃣",
@@ -195,14 +197,15 @@ class SelectStackOverflowQuestion(discord.ui.Select):
     ]
     super().__init__(placeholder="Select a question", min_values=1, max_values=1, options=options)
     self.API_KEY = os.getenv('STACKOVERFLOW_API_KEY')
-    self.ctx = ctx
+    self.interaction = interaction
     self.converter = converter
 
   async def callback(self, interaction: discord.Interaction):
-    if interaction.user != self.ctx.author:
-      await interaction.response.send_message("You are not the author of this command.", ephemeral=True, delete_after=1.0)
+    if interaction.user != self.interaction.user:
+      await interaction.response.send_message("Only who invoked the command can choose a question!", ephemeral=True)
+      await asyncio.sleep(1.5)
+      await interaction.delete_original_response()
       return
-    await interaction.response.send_message("Loading...")
     question_id = self.values[0]
     response = requests.get(f"https://api.stackexchange.com/2.3/questions/{question_id}?order=desc&sort=activity&site=stackoverflow")
     data = response.json()
@@ -210,7 +213,7 @@ class SelectStackOverflowQuestion(discord.ui.Select):
     if data["items"]:
       question = data['items'][0]['title']
       if data["items"][0]["answer_count"] == 0:
-        await interaction.edit_original_response(content=f'The question: **{question}** has no answers yet.')
+        await interaction.response.send_message(f'The question: **{question}** has no answers yet.', ephemeral=True)
         await self.view.disable()
         return
       top_answer_id = data["items"][0].get("accepted_answer_id", None)
@@ -237,40 +240,36 @@ class SelectStackOverflowQuestion(discord.ui.Select):
         embed.add_field(name="Downvotes", value=answer_down_vote_count)
         embed.add_field(name="Answer:", value=markdown_answer)
         embed.set_thumbnail(url=answer_owner_avatar)
-        embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
-        await interaction.edit_original_response(content="Here is the accepted answer to your question:", embed=embed)
+        embed.set_footer(text='Requested by {}'.format(self.interaction.user), icon_url=self.interaction.user.display_avatar.url)
+        await interaction.response.send_message("Here is the accepted answer to your question:", embed=embed)
       else:
-        await interaction.edit_original_response(content=f"I'm sorry, there is no accepted answer to the question: **{question}** on Stack Overflow.")
-        message = await self.ctx.send(f"{self.view.ctx.author.mention} **Do you want to get the most upvoted answer?**")
-        view = ViewForYesOrNoMostUpvotedAnswer(self.ctx, question_id, message, self.converter)
-        await message.edit(view=view)
+        view = ViewForYesOrNoMostUpvotedAnswer(interaction, question_id, self.converter)
+        await interaction.response.send_message(content=f"I'm sorry, there is no accepted answer to the question: **{question}** on Stack Overflow.\n{self.interaction.user.mention} **Do you want to get the most upvoted answer?**", view=view)
     else:
-      await interaction.edit_original_response(content=f"I'm sorry, I could not find any answers to the question: **{question}** on Stack Overflow.")
+      await interaction.response.send_message(content=f"I'm sorry, I could not find any answers to the question: **{question}** on Stack Overflow.", ephemeral=True)
     await self.view.disable()
 
 class ViewForQuestionCommand(discord.ui.View):
-  def __init__(self, ctx : commands.Context, questions : list[str], questions_id : list[int], message: discord.Message, converter : html2text.HTML2Text, timeout = 15):
+  def __init__(self, interaction : discord.Interaction, questions : list[str], questions_id : list[int], converter : html2text.HTML2Text, timeout = 15):
     super().__init__(timeout=timeout)
-    self.ctx = ctx
-    self.message = message
-    self.add_item(SelectStackOverflowQuestion(ctx, questions, questions_id, converter))    
+    self.interaction = interaction
+    self.add_item(SelectStackOverflowQuestion(interaction, questions, questions_id, converter))    
 
   async def disable(self):
-    await self.message.delete()
+    await self.interaction.delete_original_response()
     self.stop()
 
   async def on_timeout(self):
-    await self.ctx.message.delete()
-    await self.message.delete()
-    await self.ctx.send(f"{self.ctx.author.mention} You took too long to select a question. Please try again.", delete_after=5)
+    await self.interaction.edit_original_response(content=f"{self.interaction.user.mention} You took too long to select a question. Please try again.", view=None)
+    await asyncio.sleep(10)
+    await self.interaction.delete_original_response()
     self.stop()
 
 class ViewForYesOrNoMostUpvotedAnswer(discord.ui.View):
-  def __init__(self, ctx : commands.Context, question_id : int, message : discord.Message, converter : html2text.HTML2Text, timeout = 15):
+  def __init__(self, interaction: discord.Interaction, question_id : int, converter : html2text.HTML2Text, timeout = 15):
     super().__init__(timeout=timeout)
-    self.ctx = ctx
+    self.interaction = interaction
     self.question_id = question_id
-    self.message = message
     self.converter = converter
     self.add_item(MyButton(label="Yes", style=discord.ButtonStyle.green, custom_id="yes_most_upvoted_answer", emoji="✅"))
     self.add_item(MyButton(label="No", style=discord.ButtonStyle.red, custom_id="no_most_upvoted_answer", emoji="❌"))
@@ -278,13 +277,16 @@ class ViewForYesOrNoMostUpvotedAnswer(discord.ui.View):
   async def disable(self):
     self.children[0].disabled = True
     self.children[1].disabled = True
-    await self.message.edit(view=self)
+    await self.interaction.edit_original_response(view=self)
     self.stop()
 
   async def delete(self):
-    await self.message.delete()
+    await self.interaction.delete_original_response()
     self.stop()
 
   async def on_timeout(self):
-    await self.delete()
-    await self.ctx.send(f"{self.ctx.author.mention} You took too long to select an option. Please try again.", delete_after=5)
+    self.children[0].disabled = True
+    self.children[1].disabled = True
+    await self.interaction.edit_original_response(content=f"{self.interaction.user.mention} You took too long to select an option. Please try again.", view=None)
+    await asyncio.sleep(10)
+    await self.interaction.delete_original_response()

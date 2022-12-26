@@ -13,7 +13,6 @@ def get_random_quote():
   random_quote = f'{json_data[0]["q"]}|{json_data[0]["a"]}'
   return random_quote
 
-
 def get_random_fact():
   response = requests.get('https://uselessfacts.jsph.pl/random.json?language=en')
   json_data = json.loads(response.text)
