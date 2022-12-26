@@ -3,3 +3,4 @@ pillow
 PyNacl
 requests
 html2text
+python-dotenv
