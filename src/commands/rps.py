@@ -9,6 +9,7 @@ class RPS(commands.Cog):
         self.bot = bot
     
     @app_commands.command(description='Play Rock Paper Scissors with your friends!')
+    @app_commands.describe(member='The member to play with.')
     async def rps(self, interaction: discord.Interaction, member : discord.Member):
         if interaction.user == member or member.bot:
             raise app_commands.AppCommandError()

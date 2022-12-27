@@ -7,6 +7,7 @@ class UserInfo(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name='userinfo', description='Display information about a member. yourself if no user is provided.')
+    @app_commands.describe(member='The member to get information about. (optional)')
     async def user_info(self, interaction: discord.Interaction, member: discord.Member = None):
         statuses = {
             'online' : '🟢 Online',

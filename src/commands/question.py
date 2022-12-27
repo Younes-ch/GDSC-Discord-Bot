@@ -12,6 +12,7 @@ class Question(commands.Cog):
         self.bot = bot
 
     @app_commands.command(description='Get the best answer to your question from StackOverflow!')
+    @app_commands.describe(question="The question to search for.")
     async def question(self, interaction: discord.Interaction, question: str):
         # {
         #   "My Test Server ID": "Channel ID",

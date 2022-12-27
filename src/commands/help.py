@@ -110,9 +110,10 @@ class Help(commands.Cog):
         self.bot = bot
 
     @app_commands.command(description='Get the list of all commands or get help for a specific command.')
-    @app_commands.choices(choices=[app_commands.Choice(name=cmd['name'], value=cmd['name']) for cmd in cmds])
-    async def help(self, interaction: discord.Interaction, choices: app_commands.Choice[str] | None):
-        if choices is None:
+    @app_commands.choices(command=[app_commands.Choice(name=cmd['name'], value=cmd['name']) for cmd in cmds])
+    @app_commands.describe(command='The command you want to get help for.')
+    async def help(self, interaction: discord.Interaction, command: app_commands.Choice[str] | None):
+        if command is None:
             embed1 = discord.Embed(title='Commands:', color=0x70e68a)
             embed2 = discord.Embed(title='Commands:', color=0x70e68a)
             embed3 = discord.Embed(title='Commands:', color=0x70e68a)
@@ -142,7 +143,7 @@ class Help(commands.Cog):
             await interaction.edit_original_response(view=view)
         else:
             for cmd in cmds:
-                if cmd['name'] == choices.name:
+                if cmd['name'] == command.name:
                     embed = generate_embed(cmd['name'].capitalize(), cmd['dis'], interaction.user, {'usage' : [f'{cmd["name"]} {arg}' for arg in cmd['args']], 'examples' : cmd["exmp"]})
                     await interaction.response.send_message(embed=embed, ephemeral=True)
                     break

@@ -10,6 +10,7 @@ class Weather(commands.Cog):
         self.bot = bot
     
     @app_commands.command(description='Get the weather of a city. If no city is specified, the weather of Sousse will be displayed.')
+    @app_commands.describe(city="The city to get the weather of. (optional)")
     async def weather(self, interaction: discord.Interaction, city: str = 'Sousse'):
         api_key = os.getenv('WEATHER_API_KEY')
         base_url = 'http://api.openweathermap.org/data/2.5/weather?'

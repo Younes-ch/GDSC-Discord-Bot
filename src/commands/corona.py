@@ -9,6 +9,7 @@ class Corona(commands.Cog):
         self.bot = bot
 
     @app_commands.command(description='Returns the current corona stats of a country. Tunisia if none was mentioned.')
+    @app_commands.describe(country="The country to get the corona stats of. (optional)")
     async def corona(self, interaction: discord.Interaction, country: str = 'Tunisia'):
         url = "https://covid-193.p.rapidapi.com/statistics"
         country = country.title()

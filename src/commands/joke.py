@@ -8,6 +8,7 @@ class Joke(commands.Cog):
         self.bot = bot
 
     @app_commands.command(description='Returns a random joke. You can also specify a word to search for in the joke.')
+    @app_commands.describe(word="The word to search for in the joke. (optional)")
     async def joke(self, interaction: discord.Interaction, word: str = None):
         if word:
             full_joke = get_random_joke(word)

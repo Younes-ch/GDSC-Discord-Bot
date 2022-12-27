@@ -7,6 +7,7 @@ class Say(commands.Cog):
         self.bot = bot
 
     @app_commands.command(description='Sends a message in the same channel. You can also mention the channel to send the message in.')
+    @app_commands.describe(message="The message to send.", channel="The channel to send the message in. (optional)")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def say(self, interaction: discord.Interaction, message: str, channel: discord.TextChannel = None):
         await interaction.response.defer(ephemeral=True)

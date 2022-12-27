@@ -8,6 +8,7 @@ class Meme(commands.Cog):
         self.bot = bot
     
     @app_commands.command(description='Returns a random meme from a subreddit.')
+    @app_commands.describe(subreddit="The subreddit to get the meme from. (optional)")
     async def meme(self, interaction: discord.Interaction, subreddit: str = None):
         meme = get_random_meme(subreddit).split('|')
         if meme[0] == 'error':

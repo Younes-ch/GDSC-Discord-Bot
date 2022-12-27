@@ -7,6 +7,7 @@ class Avatar(commands.Cog):
         self.bot = bot
 
     @app_commands.command(description='Returns the avatar of a member. You can also mention the member. Yours if none was mentioned.')
+    @app_commands.describe(member="The member to get the avatar of. (optional)")
     async def avatar(self, interaction: discord.Interaction, member: discord.Member = None):
         if member is None:
             member = interaction.user
