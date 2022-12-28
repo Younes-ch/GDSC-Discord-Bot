@@ -75,6 +75,9 @@ class Bot(commands.Bot):
       if not member.bot:
         await rules_channel.send(member.mention, delete_after=0.1)
         await member.add_roles(member.guild.get_role(835557953057718314), reason="New Member")
+        await member.add_roles(member.guild.get_role(918937715217690634), reason="New Member")
+      else:
+        await member.add_roles(member.guild.get_role(835602765048840252), reason="New Bot")
 
     if not member.bot:
       avatar_file_name = "avatar.png"
