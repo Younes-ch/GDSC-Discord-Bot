@@ -12,12 +12,12 @@ class Say(commands.Cog):
     async def say(self, interaction: discord.Interaction, message: str, channel: discord.TextChannel = None):
         await interaction.response.defer(ephemeral=True)
         if channel:
-            await interaction.followup.send('Sent the message in {}!'.format(channel.mention), ephemeral=True)
+            await interaction.followup.send(f'Sent the message in {channel.mention}!', ephemeral=True)
             await channel.send(message)
         else:
-            await interaction.followup.send('Sent the message in {}!'.format(interaction.channel.mention), ephemeral=True)
+            await interaction.followup.send(f'Sent the message in {interaction.channel.mention}!', ephemeral=True)
             await interaction.channel.send(message)
-
+            
     @say.error
     async def say_error(self, interaction: discord.Interaction, error: Exception):
         if isinstance(error, app_commands.MissingPermissions):
@@ -25,7 +25,7 @@ class Say(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             embed = discord.Embed(title='Error', description=':no_entry: - An error occured while running this command!', color=0xe74c3c)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send_message(embed=embed, ephemeral=True)
             print(error)
     
 async def setup(bot: commands.Bot):

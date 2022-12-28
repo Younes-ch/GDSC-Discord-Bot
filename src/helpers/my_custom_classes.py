@@ -290,3 +290,28 @@ class ViewForYesOrNoMostUpvotedAnswer(discord.ui.View):
     await self.interaction.edit_original_response(content=f"{self.interaction.user.mention} You took too long to select an option. Please try again.", view=None)
     await asyncio.sleep(10)
     await self.interaction.delete_original_response()
+
+class ViewForSocialMediaCommand(discord.ui.View):
+  def __init__(self, bot: commands.Bot):
+    super().__init__(timeout=None)
+    self.google_emoji = bot.get_emoji(1057434239261491200)
+    self.facebook_emoji = bot.get_emoji(1057425555856822373)
+    self.instagram_emoji = bot.get_emoji(1057432580661706813)
+    self.youtube_emoji = bot.get_emoji(1057432578665226271)
+    self.spotify_emoji = bot.get_emoji(1057432573611094096)
+    self.spotify_url = 'https://open.spotify.com/show/3wrC7hOR6OIImXuEkMqmPm?go=1&sp_cid=5a981dbb5ad7e10879beed6ba2664cca&utm_source=embed_player_p&utm_medium=desktop&nd=1'
+    self.linkedin_emoji = bot.get_emoji(1057432575213305887)
+    self.twitter_emoji = bot.get_emoji(1057432577037828137)
+    self.apple_emoji = bot.get_emoji(1057432511757684767)
+    self.add_item(discord.ui.Button(
+                                label='GDSC Platform',
+                                url='https://gdsc.community.dev/higher-institute-of-applied-science-and-technology/', emoji=self.google_emoji, row=0)
+                            )
+    self.add_item(discord.ui.Button(label='Facebook', url='https://www.facebook.com/GDSC.ISSATSo/', emoji=self.facebook_emoji, row=0))
+    self.add_item(discord.ui.Button(label='Instagram', url='https://www.instagram.com/gdsc.issatso/', emoji=self.instagram_emoji, row=0))
+    self.add_item(discord.ui.Button(label='YouTube', url='https://www.youtube.com/@googledeveloperstudentclub7820', emoji=self.youtube_emoji, row=0))
+    self.add_item(discord.ui.Button(label='LinkedIn', url='https://www.linkedin.com/company/gdsc-issatso/', emoji=self.linkedin_emoji, row=1))
+    self.add_item(discord.ui.Button(label='Twitter', url='https://twitter.com/GDSC_ISSATSO', emoji=self.twitter_emoji, row=1))
+    self.add_item(discord.ui.Button(label='E-mail', url="https://mailto:dscissatso@gmail.com", emoji="📧", row=1))
+    self.add_item(discord.ui.Button(label='Spotify', url=self.spotify_url, emoji=self.spotify_emoji, row=2))
+    self.add_item(discord.ui.Button(label='Apple Podcasts', url='https://podcasts.apple.com/us/podcast/gdsc-podcast/id1569890008', emoji=self.apple_emoji, row=2))

@@ -1,11 +1,18 @@
+from discord.ext import commands
 import discord
 import requests
 import json
 
 def find_invite_by_code(invite_list, code):
   for inv in invite_list:     
-      if inv.code == code:
-          return inv
+    if inv.code == code:
+        return inv
+
+def get_corresponding_server_logs_channel_id(guild_id: int):
+  if guild_id == 828940910053556224:
+    return 935969094652551189
+  else:
+    return 918582510915567616
 
 def get_random_quote():
   response = requests.get('https://zenquotes.io/api/random')

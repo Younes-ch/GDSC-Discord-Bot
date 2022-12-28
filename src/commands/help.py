@@ -97,6 +97,12 @@ cmds = [
                     "dis" : "Fetches a similar question from stackoverflow and returns the correct answer."
                 },
                 {
+                    "name" : "/socialmedia",
+                    "args" : [""],
+                    'exmp': ['/socialmedia'],
+                    'dis' : 'Displays our social media links.'
+                },
+                {
                     "name" : '/help', 
                     'args' : ['[command]', ''],
                     'exmp': ['/help avatar', '/help'],
