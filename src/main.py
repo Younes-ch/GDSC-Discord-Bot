@@ -194,7 +194,7 @@ class Bot(commands.Bot):
       for mutual_guild in after.mutual_guilds:
         server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(mutual_guild.id))
         embed = discord.Embed(description=f'🔧 **{after.mention} has changed their avatar**', color=0xf1c40f)
-        embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
+        embed.set_author(name=f'{after}', icon_url=before.display_avatar.url)
         embed.add_field(name='Old avatar:', value=f'[Before]({before.display_avatar.url})')
         embed.add_field(name='New avatar:', value=f'[After]({after.display_avatar.url})')
         embed.set_footer(text=f'User ID: {after.id}')
@@ -218,13 +218,13 @@ class Bot(commands.Bot):
   async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
     if before.channel is None and after.channel is not None:
-      embed = discord.Embed(description=f'📥 **{member.mention} joined voice channel `🔊 | {after.channel.name}`**', color=0x2ecc71)
+      embed = discord.Embed(description=f'📥 **{member.mention} joined voice channel `{after.channel.name}`**', color=0x2ecc71)
       embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
       now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
       embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       await server_logs_channel.send(embed=embed)
     elif before.channel is not None and after.channel is None:
-      embed = discord.Embed(description=f'📤 **{member.mention} left voice channel `🔊 | {before.channel.name}`**', color=0xca3b3b)
+      embed = discord.Embed(description=f'📤 **{member.mention} left voice channel `{before.channel.name}`**', color=0xca3b3b)
       embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
       now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
       embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
@@ -232,7 +232,7 @@ class Bot(commands.Bot):
     elif before.channel is not None and after.channel is not None and before.channel.id != after.channel.id:
       embed = discord.Embed(description=f'🔁 **{member.mention} has switched voice channels**', color=0x3498db)
       embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
-      embed.add_field(name='Voice channel:', value=f'🔊 | {before.channel.mention} ➡️ {after.channel.mention}')
+      embed.add_field(name='Voice channel:', value=f'{before.channel.mention} ➡️ {after.channel.mention}')
       now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
       embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       await server_logs_channel.send(embed=embed)
