@@ -14,18 +14,15 @@ class Bot(commands.Bot):
   def __init__(self):
     super().__init__(command_prefix='&', intents=discord.Intents.all(), activity=discord.Activity(type=discord.ActivityType.listening, name="/help"),
     help_command=None)
-    self.available_commands = [
-                               "commands.quote", "commands.joke", "commands.icon", "commands.avatar", "commands.ping",
-                               "commands.user_info", "commands.corona", "commands.server_info", "commands.meme", "commands.fact",
-                               "commands.say", "commands.announce", "commands.weather", "commands.help", "commands.rps", "commands.question",
-                               "commands.social_media", "commands.snipe"
-                            ]
     self.invites = {}
 
   async def setup_hook(self):
-    for ext in self.available_commands:
-      await self.load_extension(ext)
-      print(f"Loaded \033[33m{ext.replace('commands.', '')}.py\033[0m")
+    groups = [folder for folder in os.listdir('src/commands') if folder != '__pycache__']
+    for group in groups:
+      extensions = [ext for ext in os.listdir(f'src/commands/{group}') if ext != '__pycache__']
+      for ext in extensions:
+        await self.load_extension(f'commands.{group}.{ext.replace(".py", "")}')
+        print(f"Loaded \033[33m{ext}\033[0m")
     self.add_view(ViewForSocialMediaCommand(self))
 
   async def on_ready(self):
@@ -52,14 +49,15 @@ class Bot(commands.Bot):
 # ********************************************************* Messages Events ***************************************************************
 
   async def on_message_delete(self, message: discord.Message):
-    server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(message.guild.id))
-    embed = discord.Embed(description=f'🗑️ **Message sent by {message.author.mention} deleted in {message.channel.mention}**',
-                          color=0xca3b3b,
-                          timestamp=datetime.datetime.utcnow())
-    embed.set_author(name=message.author, icon_url=message.author.display_avatar.url)
-    embed.add_field(name='Message Content', value=f'{message.content}', inline=False)
-    embed.set_footer(text=message.guild.name)
-    await server_logs_channel.send(embed=embed)
+    if message.content:
+      server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(message.guild.id))
+      embed = discord.Embed(description=f'🗑️ **Message sent by {message.author.mention} deleted in {message.channel.mention}**',
+                            color=0xca3b3b,
+                            timestamp=datetime.datetime.utcnow())
+      embed.set_author(name=message.author, icon_url=message.author.display_avatar.url)
+      embed.add_field(name='Message Content', value=f'{message.content}', inline=False)
+      embed.set_footer(text=message.guild.name)
+      await server_logs_channel.send(embed=embed)
 
 # ********************************************************* Member Events ***************************************************************
 
