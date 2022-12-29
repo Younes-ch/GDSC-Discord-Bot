@@ -119,20 +119,26 @@ cmds = [
             },
             {
                 "name" : "/snipe",
-                'id': '1058100915439161404',
+                'id' : '1058100915439161404',
                 "args" : [""],
                 'exmp': ['</snipe:1058100915439161404>'],
                 'dis' : 'Retrieves the last deleted messages in the channel.'
             },
             {
+                "name" : "/moveme",
+                "id" : "1058162013806805062",
+                "args" : ["[voice channel]", "[member]"],
+                "exmp" : ['</moveme:1058162013806805062> #voice-channel', '</moveme:1058162013806805062> @user'],
+                "dis" : "Moves you to the mentioned voice channel or the mentioned member."
+            },
+            {
                 "name" : '/help',
-                'id': '1058100915942473804', 
+                'id' : '1058100915942473804', 
                 'args' : ['[command]', ''],
                 'exmp': ['</help:1058100915942473804> avatar', '</help:1058100915942473804>'],
                 'dis' : 'Returns the list of all commands or get help for a specific command.'
             }
         ]
-
 
 class Help(commands.Cog):
     def __init__(self, bot: commands.Bot):
