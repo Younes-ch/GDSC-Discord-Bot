@@ -103,6 +103,12 @@ cmds = [
                     'dis' : 'Displays our social media links.'
                 },
                 {
+                    "name" : "/snipe",
+                    "args" : [""],
+                    'exmp': ['/snipe'],
+                    'dis' : 'Retrieves the last deleted messages in the channel.'
+                },
+                {
                     "name" : '/help', 
                     'args' : ['[command]', ''],
                     'exmp': ['/help avatar', '/help'],

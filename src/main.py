@@ -18,7 +18,7 @@ class Bot(commands.Bot):
                                "commands.quote", "commands.joke", "commands.icon", "commands.avatar", "commands.ping",
                                "commands.user_info", "commands.corona", "commands.server_info", "commands.meme", "commands.fact",
                                "commands.say", "commands.announce", "commands.weather", "commands.help", "commands.rps", "commands.question",
-                               "commands.social_media"
+                               "commands.social_media", "commands.snipe"
                             ]
     self.invites = {}
 
@@ -53,13 +53,12 @@ class Bot(commands.Bot):
 
   async def on_message_delete(self, message: discord.Message):
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(message.guild.id))
-    embed = discord.Embed(description=f'🗑️ **Message sent by {message.author.mention} deleted in {message.channel.mention}**', color=0xca3b3b)
-    embed.add_field(name='Message Content', value=f'```{message.content}```', inline=False)
-    embed.add_field(name='Message ID:', value=f'```{message.id}```')
-    embed.add_field(name='Author ID:', value=f'```{message.author.id}```')
+    embed = discord.Embed(description=f'🗑️ **Message sent by {message.author.mention} deleted in {message.channel.mention}**',
+                          color=0xca3b3b,
+                          timestamp=datetime.datetime.utcnow())
+    embed.set_author(name=message.author, icon_url=message.author.display_avatar.url)
+    embed.add_field(name='Message Content', value=f'{message.content}', inline=False)
     embed.set_footer(text=message.guild.name)
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
     await server_logs_channel.send(embed=embed)
 
 # ********************************************************* Member Events ***************************************************************
@@ -112,26 +111,22 @@ class Bot(commands.Bot):
       for invite in invites_before_join:
         if find_invite_by_code(invites_after_join, invite.code):
           if invite.uses < find_invite_by_code(invites_after_join, invite.code).uses:
-            embed = discord.Embed(description=f'📥 **{member.mention} has joined the server**', color=0x2ecc71)
+            embed = discord.Embed(description=f'📥 **{member.mention} has joined the server**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
             embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
             embed.add_field(name='🔒 Invite Code:', value=invite.code)
             embed.add_field(name='✉️ Inviter:', value=invite.inviter)
             embed.set_footer(text=f'Guild: {member.guild.name}', icon_url=member.guild.icon.url)
             embed.set_thumbnail(url=member.display_avatar.url)
-            now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-            embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
             await asyncio.sleep(2)
             await invites_channel.send(embed=embed)
             self.invites[member.guild.id] = invites_after_join
       
       server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
-      embed = discord.Embed(description=f'📥 **{member.mention} has joined the server**', color=0x2ecc71)
+      embed = discord.Embed(description=f'📥 **{member.mention} has joined the server**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
       embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
       embed.add_field(name='Account Creation:', value=member.created_at.strftime('%d %B %Y, %I:%M %p'))
       embed.add_field(name='Joined At:', value=member.joined_at.strftime('%d %B %Y, %I:%M %p'))
       embed.set_footer(text=f'{member.guild.name} • User ID: {member.id}', icon_url=member.guild.icon.url)
-      now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-      embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       embed.set_thumbnail(url=member.display_avatar.url)
       await server_logs_channel.send(embed=embed)
 
@@ -147,12 +142,10 @@ class Bot(commands.Bot):
             await after.edit(nick=f'[Event Speaker] {before.display_name}')
           except discord.errors.Forbidden:
             await after.send(f'**Event Speaker** Role has just been __added__ to your roles in **{after.guild.name}** server, please go ahead and add **[Event Speaker]** *tag* to your nickname')
-      embed = discord.Embed(description=f'🔧 **{after.mention} has been given a new role**', color=0xf1c40f)
+      embed = discord.Embed(description=f'🔧 **{after.mention} has been given a new role**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
       embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
       embed.add_field(name='✅ Added role:', value=list(filter(lambda x: x not in before_roles, after_roles))[0])
       embed.set_footer(text=f'User ID: {after.id}')
-      now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-      embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       embed.set_thumbnail(url=after.display_avatar.url)
       await server_logs_channel.send(embed=embed)
     elif len(before_roles) > len(after_roles):
@@ -163,32 +156,26 @@ class Bot(commands.Bot):
             await after.edit(nick=new_nick)
           except discord.errors.Forbidden:
             await after.send(f'**Event Speaker** Role has just been __removed__ from your roles in **{after.guild.name}** server, please go ahead and remove **[Event Speaker]** *tag* from your nickname')      
-      embed = discord.Embed(description=f'🔧 **{after.mention} has lost a role**', color=0xf1c40f)
+      embed = discord.Embed(description=f'🔧 **{after.mention} has lost a role**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
       embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
       embed.add_field(name='❌ Removed role:', value=list(filter(lambda x: x not in after_roles, before_roles))[0])
       embed.set_footer(text=f'User ID: {after.id}')
-      now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-      embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       embed.set_thumbnail(url=after.display_avatar.url)
       await server_logs_channel.send(embed=embed)
     elif before.display_name != after.display_name:
-      embed = discord.Embed(description=f'🔧 **{after.mention} has changed their nickname**', color=0xf1c40f)
+      embed = discord.Embed(description=f'🔧 **{after.mention} has changed their nickname**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
       embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
       embed.add_field(name='Old nickname:', value=f'`{before.display_name}`')
       embed.add_field(name='New nickname:', value=f'`{after.display_name}`')
       embed.set_footer(text=f'User ID: {after.id}')
-      now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-      embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       embed.set_thumbnail(url=after.display_avatar.url)
       await server_logs_channel.send(embed=embed)
     elif before.display_avatar.key != after.display_avatar.key:
-      embed = discord.Embed(description=f'🔧 **{after.mention} has changed their avatar**', color=0xf1c40f)
+      embed = discord.Embed(description=f'🔧 **{after.mention} has changed their avatar**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
       embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
       embed.add_field(name='Old avatar:', value=f'[Before]({before.display_avatar.url})')
       embed.add_field(name='New avatar:', value=f'[After]({after.display_avatar.url})')
       embed.set_footer(text=f'User ID: {after.id}')
-      now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-      embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       embed.set_thumbnail(url=after.display_avatar.url)
       await server_logs_channel.send(embed=embed)
 
@@ -196,13 +183,11 @@ class Bot(commands.Bot):
     if before.display_avatar.key != after.display_avatar.key:
       for mutual_guild in after.mutual_guilds:
         server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(mutual_guild.id))
-        embed = discord.Embed(description=f'🔧 **{after.mention} has changed their avatar**', color=0xf1c40f)
+        embed = discord.Embed(description=f'🔧 **{after.mention} has changed their avatar**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
         embed.set_author(name=f'{after}', icon_url=before.display_avatar.url)
         embed.add_field(name='Old avatar:', value=f'[Before]({before.display_avatar.url})')
         embed.add_field(name='New avatar:', value=f'[After]({after.display_avatar.url})')
         embed.set_footer(text=f'User ID: {after.id}')
-        now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-        embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
         embed.set_thumbnail(url=after.display_avatar.url)
         await server_logs_channel.send(embed=embed)
           
@@ -210,34 +195,26 @@ class Bot(commands.Bot):
     self.invites[member.guild.id] = await member.guild.invites()
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
 
-    embed = discord.Embed(description=f'📤 **{member.mention} has left the server**', color=0xca3b3b)
+    embed = discord.Embed(description=f'📤 **{member.mention} has left the server**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
     embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
     embed.set_footer(text=f'User ID: {member.id}', icon_url=member.guild.icon.url)
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
     embed.set_thumbnail(url=member.display_avatar.url)
     await server_logs_channel.send(embed=embed)
 
   async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
     if before.channel is None and after.channel is not None:
-      embed = discord.Embed(description=f'📥 **{member.mention} joined voice channel `{after.channel.name}`**', color=0x2ecc71)
+      embed = discord.Embed(description=f'📥 **{member.mention} joined voice channel `{after.channel.name}`**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
       embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
-      now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-      embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       await server_logs_channel.send(embed=embed)
     elif before.channel is not None and after.channel is None:
-      embed = discord.Embed(description=f'📤 **{member.mention} left voice channel `{before.channel.name}`**', color=0xca3b3b)
+      embed = discord.Embed(description=f'📤 **{member.mention} left voice channel `{before.channel.name}`**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
       embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
-      now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-      embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       await server_logs_channel.send(embed=embed)
     elif before.channel is not None and after.channel is not None and before.channel.id != after.channel.id:
-      embed = discord.Embed(description=f'🔁 **{member.mention} has switched voice channels**', color=0x3498db)
+      embed = discord.Embed(description=f'🔁 **{member.mention} has switched voice channels**', color=0x3498db, timestamp=datetime.datetime.utcnow())
       embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
       embed.add_field(name='Voice channel:', value=f'{before.channel.mention} ➡️ {after.channel.mention}')
-      now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-      embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
       await server_logs_channel.send(embed=embed)
 
   @tasks.loop(minutes=5.0)
@@ -278,15 +255,13 @@ class Bot(commands.Bot):
     elif isinstance(channel, discord.ForumChannel):
       channel_type = 'Forum'
 
-    embed = discord.Embed(description=f'🆕 **{channel_type} has been created**', color=0x2ecc71)
+    embed = discord.Embed(description=f'🆕 **{channel_type} has been created**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
     embed.add_field(name='Name:', value=f'`{channel.name}`')
     if isinstance(channel, discord.VoiceChannel):
       embed.add_field(name='User limit:', value=f'`{channel.user_limit}`')
     if channel.category:
       embed.add_field(name='Category:', value=f'`{channel.category}`')
     embed.set_footer(text=f'Channel ID: {channel.id}')
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
     await server_logs_channel.send(embed=embed)
 
   async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
@@ -302,10 +277,8 @@ class Bot(commands.Bot):
     elif isinstance(before, discord.ForumChannel):
       channel_type = 'Forum'
 
-    embed = discord.Embed(color=0xf1c40f)
+    embed = discord.Embed(color=0xf1c40f, timestamp=datetime.datetime.utcnow())
     embed.set_footer(text=f'Channel ID: {before.id}')
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
 
     if before.name != after.name:
       embed.description = f'🔧 **{channel_type} name has been updated**:'
@@ -349,35 +322,29 @@ class Bot(commands.Bot):
     elif isinstance(channel, discord.ForumChannel):
       channel_type = 'Forum'
 
-    embed = discord.Embed(description=f'🗑️ **{channel_type} has been deleted**', color=0xca3b3b)
+    embed = discord.Embed(description=f'🗑️ **{channel_type} has been deleted**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
     embed.add_field(name='Name:', value=f'`{channel.name}`')
     embed.set_footer(text=f'Channel ID: {channel.id}')
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
     await server_logs_channel.send(embed=embed)
 
   async def on_guild_role_create(self, role: discord.Role):
     await asyncio.sleep(60)
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(role.guild.id))
-    embed = discord.Embed(description=f'🆕 **Role has been created**', color=0x2ecc71)
+    embed = discord.Embed(description=f'🆕 **Role has been created**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
     embed.add_field(name='🏷️ Name:', value=f'`{role.name}`')
     embed.add_field(name='🪪 ID:', value=f'`{role.id}`')
     embed.add_field(name='🎨 Color:', value=f'`#{role.color.value:0>6x}`')
     embed.set_footer(text=role.guild.name)
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
     await server_logs_channel.send(embed=embed)
 
   async def on_guild_role_update(self, before: discord.Role, after: discord.Role):
     await asyncio.sleep(60)
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(before.guild.id))
-    embed = discord.Embed(description=f'🔧 **Role has been updated**', color=0xf1c40f)
+    embed = discord.Embed(description=f'🔧 **Role has been updated**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
     embed.add_field(name='🏷️ Name:', value=f'`{after.name}`')
     embed.add_field(name='🪪 ID:', value=f'`{after.id}`')
     embed.add_field(name='\u200b', value='\u200b')
     embed.set_footer(text=before.guild.name)
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
 
     if before.name != after.name or before.color != after.color:
       if before.name != after.name:
@@ -393,21 +360,17 @@ class Bot(commands.Bot):
   async def on_guild_role_delete(self, role: discord.Role):
     await asyncio.sleep(60)
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(role.guild.id))
-    embed = discord.Embed(description=f'🗑️ **Role has been deleted**', color=0xca3b3b)
+    embed = discord.Embed(description=f'🗑️ **Role has been deleted**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
     embed.add_field(name='🏷️ Name:', value=f'`{role.name}`')
     embed.add_field(name='🪪 ID:', value=f'`{role.id}`')
     embed.add_field(name='🎨 Color:', value=f'`#{role.color.value:0>6x}`')
     embed.set_footer(text=role.guild.name)
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
     await server_logs_channel.send(embed=embed)
 
   async def on_guild_emojis_update(self, guild: discord.Guild, before: list[discord.Emoji], after: list[discord.Emoji]):
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(guild.id))
-    embed = discord.Embed()
-    now_timestamp = str(datetime.datetime.now().timestamp()).split('.')[0]
+    embed = discord.Embed(timestamp=datetime.datetime.utcnow())
     embed.set_footer(text=f'{guild.name}')
-    embed.timestamp = datetime.datetime.fromtimestamp(int(now_timestamp))
     if len(before) < len(after):
       embed.description = f'🆕 **Emoji has been added**'
       embed.color = 0x2ecc71

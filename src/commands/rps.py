@@ -28,7 +28,8 @@ class RPS(commands.Cog):
     @rps.error
     async def rps_error(self, interaction: discord.Interaction, error: Exception):
         if isinstance(error, app_commands.AppCommandError):
-            await interaction.response.send_message('You cannot play against yourself or a bot!', ephemeral=True)
+            embed = discord.Embed(description=':no_entry: You cannot play against **yourself** or a **bot**!', color=interaction.user.top_role.color)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             embed = discord.Embed(description=':no_entry: An error occurred while executing this command.', color=interaction.user.top_role.color)
             await interaction.response.send_message(embed=embed, ephemeral=True)
