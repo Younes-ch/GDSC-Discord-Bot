@@ -58,6 +58,7 @@ class MoveAll(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             embed = discord.Embed(title="Error", description="⛔ - An error occured while running the command!", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             print(error)            
 
     @tasks.loop(minutes=1)

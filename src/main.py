@@ -49,7 +49,7 @@ class Bot(commands.Bot):
 # ********************************************************* Messages Events ***************************************************************
 
   async def on_message_delete(self, message: discord.Message):
-    if message.content:
+    if message.content and message.guild:
       server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(message.guild.id))
       embed = discord.Embed(description=f'🗑️ **Message sent by {message.author.mention} deleted in {message.channel.mention}**',
                             color=0xca3b3b,

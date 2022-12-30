@@ -10,6 +10,7 @@ class MyButton(discord.ui.Button):
     super().__init__(label=label, style=style, custom_id=custom_id, emoji=emoji, disabled=disabled)
 
   async def callback(self, interaction: discord.Interaction):
+    # ********************************************* Help Command *************************************************************
     if self.custom_id == 'next':
       self.view.current_page += 1
       if self.view.current_page == len(self.view.listOfEmbeds):
@@ -25,6 +26,8 @@ class MyButton(discord.ui.Button):
       if "Page" in self.view.children[1].label:
         self.view.children[1].label = 'Page: {}/{}'.format(self.view.current_page + 1, len(self.view.listOfEmbeds))
         await interaction.edit_original_response(embed=self.view.listOfEmbeds[self.view.current_page], view=self.view)
+
+    # ********************************************* Question Command *************************************************************
 
     if self.custom_id in ['yes_most_upvoted_answer', 'no_most_upvoted_answer']:
       if interaction.user != self.view.interaction.user:
@@ -75,6 +78,8 @@ class MyButton(discord.ui.Button):
       await interaction.response.send_message('Ok, I will not show the most upvoted answer.')
       await self.view.disable()
 
+    # ********************************************* Rock Paper Scissors Command *************************************************************
+
     if self.custom_id == 'rock' or self.custom_id == 'scissors' or self.custom_id == 'paper':
       self.view.players_choices.append(self.label)
       await self.view.disable()
@@ -88,9 +93,21 @@ class MyButton(discord.ui.Button):
         await interaction.response.send_message(f'You chose **`{self.label}`**')
       if len(self.view.players_choices) == 2:
         await self.view.get_winner()
+      
+    # ********************************************* Slowmode Command *************************************************************
 
+    if self.custom_id == 'yes_disable_slow_mode':
+      await self.view.channel.edit(slowmode_delay=0)
+      await self.view.interaction.edit_original_response(content='**⏱️ - Slowmode has been `disabled`.**', view=None)
+      self.view.stop()
+    elif self.custom_id == 'no_disable_slow_mode':
+      await self.view.interaction.edit_original_response(content='**Okay, I will not disable slowmode.**', view=None)
+      self.view.stop()
+
+# ********************************************* Views *************************************************************
+# ---------------------------------------------- Help Command View ------------------------------------------------
 class ViewForHelpCommand(discord.ui.View):
-  def __init__(self, *, interaction: discord.Interaction, listOfEmbeds : list[discord.Embed], timeout = 30):
+  def __init__(self, *, interaction: discord.Interaction, listOfEmbeds : list[discord.Embed], timeout = 60):
     super().__init__(timeout=timeout)
     self.interaction = interaction
     self.listOfEmbeds = listOfEmbeds
@@ -104,6 +121,7 @@ class ViewForHelpCommand(discord.ui.View):
     self.children[2].disabled = True
     await self.interaction.edit_original_response(embed=self.listOfEmbeds[self.current_page], view=self)
 
+# ---------------------------------------------- Rock Paper Scissors Command View ------------------------------------------------
 class ViewForRPSCommand(discord.ui.View):
   def __init__(self, *, interaction: discord.Interaction, author: discord.Member, member, player_msg: discord.Message, embed: discord.Embed, timeout = 30):
     super().__init__(timeout=timeout)
@@ -182,6 +200,7 @@ class ViewForRPSCommand(discord.ui.View):
     self.players_choices.clear()
     self.stop()
 
+# --------------------------------------------------- StackOverflow Question Select Menu --------------------------------------------------- #
 class SelectStackOverflowQuestion(discord.ui.Select):
   def __init__(self, interaction: discord.Interaction, questions : list[str], questions_id : list[int], converter : html2text.HTML2Text):
     mapping = {
@@ -249,6 +268,8 @@ class SelectStackOverflowQuestion(discord.ui.Select):
       await interaction.response.send_message(content=f"I'm sorry, I could not find any answers to the question: **{question}** on Stack Overflow.", ephemeral=True)
     await self.view.disable()
 
+
+# --------------------------------------------------- Question Command View --------------------------------------------------- #
 class ViewForQuestionCommand(discord.ui.View):
   def __init__(self, interaction : discord.Interaction, questions : list[str], questions_id : list[int], converter : html2text.HTML2Text, timeout = 15):
     super().__init__(timeout=timeout)
@@ -265,8 +286,9 @@ class ViewForQuestionCommand(discord.ui.View):
     await self.interaction.delete_original_response()
     self.stop()
 
+# --------------------------------------------------- Yes or No Most Upvoted Answer View --------------------------------------------------- #
 class ViewForYesOrNoMostUpvotedAnswer(discord.ui.View):
-  def __init__(self, interaction: discord.Interaction, question_id : int, converter : html2text.HTML2Text, timeout = 15):
+  def __init__(self, interaction: discord.Interaction, question_id : int, converter : html2text.HTML2Text, timeout = 30):
     super().__init__(timeout=timeout)
     self.interaction = interaction
     self.question_id = question_id
@@ -289,8 +311,9 @@ class ViewForYesOrNoMostUpvotedAnswer(discord.ui.View):
     self.children[1].disabled = True
     await self.interaction.edit_original_response(content=f"{self.interaction.user.mention} You took too long to select an option. Please try again.", view=None)
     await asyncio.sleep(10)
-    await self.interaction.delete_original_response()
+    await self.delete()
 
+# --------------------------------------------------- Social Media Command View --------------------------------------------------- #
 class ViewForSocialMediaCommand(discord.ui.View):
   def __init__(self, bot: commands.Bot):
     super().__init__(timeout=None)
@@ -315,3 +338,23 @@ class ViewForSocialMediaCommand(discord.ui.View):
     self.add_item(discord.ui.Button(label='E-mail', url="https://mailto:dscissatso@gmail.com", emoji="📧", row=1))
     self.add_item(discord.ui.Button(label='Spotify', url=self.spotify_url, emoji=self.spotify_emoji, row=2))
     self.add_item(discord.ui.Button(label='Apple Podcasts', url='https://podcasts.apple.com/us/podcast/gdsc-podcast/id1569890008', emoji=self.apple_emoji, row=2))
+
+# --------------------------------------------------- Yes or No Disable Slow Mode View --------------------------------------------------- #
+class ViewForYesOrNoDisableSlowMode(discord.ui.View):
+  def __init__(self, interaction: discord.Interaction, channel: discord.TextChannel):
+    super().__init__(timeout=30)
+    self.interaction = interaction
+    self.channel = channel
+    self.add_item(MyButton(label="Yes", style=discord.ButtonStyle.green, custom_id="yes_disable_slow_mode", emoji="✅"))
+    self.add_item(MyButton(label="No", style=discord.ButtonStyle.red, custom_id="no_disable_slow_mode", emoji="❌"))
+  
+  async def delete(self):
+    await self.interaction.delete_original_response()
+    self.stop()
+  
+  async def on_timeout(self):
+    self.children[0].disabled = True
+    self.children[1].disabled = True
+    await self.interaction.edit_original_response(content=f"{self.interaction.user.mention} You took too long to select an option. Please try again.", view=None)
+    await asyncio.sleep(10)
+    await self.delete()

@@ -139,6 +139,25 @@ cmds = [
                 "dis" : "The bot joins the mentioned voice channel or your voice channel if none mentioned and waits for you to drag him to another voice channel."
             },
             {
+                "name" : "/setnick",
+                "id" : "1058402928819441684",
+                "args" : ["[member] [nickname]", "[member]"],
+                "exmp" : ['</setnick:1058402928819441684> @user new nickname', '</setnick:1058402928819441684> @user'],
+                "dis" : "Changes the nickname of the mentioned member back to his original nickname if no nickname was given else changes it to the given nickname."
+            },
+            {
+                "name" : "/slowmode",
+                "id" : "1058417166833176597",
+                "args" : ["[text channel] [seconds]", "[seconds]", "[text channel]", ""],
+                "exmp" : [
+                          '</slowmode:1058417166833176597> #text-channel 10',
+                          '</slowmode:1058417166833176597> 10',
+                          '</slowmode:1058417166833176597> #text-channel',
+                          '</slowmode:1058417166833176597>'
+                        ],
+                "dis" : "Sets the slowmode of the mentioned text channel to the given seconds or the current text channel if no text channel was mentioned."
+            },
+            {
                 "name" : '/help',
                 'id' : '1058100915942473804', 
                 'args' : ['[command]', ''],
@@ -157,17 +176,9 @@ class Help(commands.Cog):
     async def help(self, interaction: discord.Interaction, command: app_commands.Choice[str] | None):
         if command is None:
             embed1 = discord.Embed(title='Commands:', color=0x70e68a)
-            embed2 = discord.Embed(title='Commands:', color=0x70e68a)
-            embed3 = discord.Embed(title='Commands:', color=0x70e68a)
-            embed4 = discord.Embed(title='Commands:', color=0x70e68a)
             embed1.set_footer(text='Requested by {}'.format(interaction.user), icon_url = interaction.user.display_avatar.url)
             embed1.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
-            embed2.set_footer(text='Requested by {}'.format(interaction.user), icon_url = interaction.user.display_avatar.url)
-            embed2.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
-            embed3.set_footer(text='Requested by {}'.format(interaction.user), icon_url = interaction.user.display_avatar.url)
-            embed3.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
-            embed4.set_footer(text='Requested by {}'.format(interaction.user), icon_url = interaction.user.display_avatar.url)
-            embed4.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
+            embed2, embed3, embed4, embed5 = (embed1.copy() for _ in range(4))
             counter = 0
             for cmd in cmds:
                 counter += 1
@@ -186,12 +197,17 @@ class Help(commands.Cog):
                         embed3.add_field(name=f'{cmd["name"]}:', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
                     else:
                         embed3.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
-                else:
+                elif counter > 16 and counter <= 21:
                     if "&announce" in cmd["name"]:
                         embed4.add_field(name=f'{cmd["name"]}:', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
                     else:
                         embed4.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
-            listOfEmbeds = [embed1, embed2, embed3, embed4]
+                else:
+                    if "&announce" in cmd["name"]:
+                        embed5.add_field(name=f'{cmd["name"]}:', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
+                    else:
+                        embed5.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
+            listOfEmbeds = [embed1, embed2, embed3, embed4, embed5]
             await interaction.response.send_message(embed=embed1, ephemeral=True)
             view = ViewForHelpCommand(interaction=interaction, listOfEmbeds=listOfEmbeds)
             await interaction.edit_original_response(view=view)
