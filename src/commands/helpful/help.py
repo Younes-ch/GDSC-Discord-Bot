@@ -132,6 +132,13 @@ cmds = [
                 "dis" : "Moves you to the mentioned voice channel or the mentioned member."
             },
             {
+                "name" : "/moveall",
+                "id" : "1058173029852651631",
+                "args" : ["[voice channel]", ""],
+                "exmp" : ['</moveall:1058173029852651631> #voice-channel', '</moveall:1058173029852651631>'],
+                "dis" : "The bot joins the mentioned voice channel or your voice channel if none mentioned and waits for you to drag him to another voice channel."
+            },
+            {
                 "name" : '/help',
                 'id' : '1058100915942473804', 
                 'args' : ['[command]', ''],
