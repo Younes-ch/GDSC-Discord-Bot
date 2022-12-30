@@ -211,7 +211,7 @@ class Bot(commands.Bot):
       await server_logs_channel.send(embed=embed)
     elif before.channel is not None and after.channel is not None and before.channel.id != after.channel.id:
       embed = discord.Embed(description=f'🔁 **{member.mention} has switched voice channels**', color=0x3498db, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
+      embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
       embed.add_field(name='Voice channel:', value=f'{before.channel.mention} ➡️ {after.channel.mention}')
       await server_logs_channel.send(embed=embed)
 
