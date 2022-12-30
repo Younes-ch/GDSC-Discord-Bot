@@ -16,6 +16,7 @@ class MoveAll(commands.Cog):
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         if member.id == self.bot.user.id:
             if before.channel is None and after.channel is not None:
+                if not self.disconnect_after_inactivity.is_running():
                     self.disconnect_after_inactivity.start()
                     self.connected_voice_channels[member.guild.id] = after.channel
             elif before.channel is not None and after.channel is None:
