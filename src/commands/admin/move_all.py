@@ -14,24 +14,22 @@ class MoveAll(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-        if before.channel is None and after.channel is not None:
-            if member.id == self.bot.user.id:
-                self.disconnect_after_inactivity.start()
-                self.connected_voice_channels[member.guild.id] = after.channel
-        elif before.channel is not None and after.channel is None:
-            if member.id == self.bot.user.id:
-                self.disconnect_after_inactivity.stop()
-                self.connected_voice_channels[member.guild.id] = None
-                self.interaction_channel = None
-        elif before.channel is not None and after.channel is not None and before.channel.id != after.channel.id:
-            if member.id == self.bot.user.id:
-                self.connected_voice_channels[member.guild.id] = after.channel
-                if before.channel.members:
-                    for member in before.channel.members:
-                        await member.move_to(after.channel)
-                    await self.interaction.followup.send(f"**✅ - Moved everyone to {after.channel.mention}!**", ephemeral=True)
-                else:
-                    await self.interaction.followup.send("**❌ - There were no members in the voice channel.**", ephemeral=True)
+        if member.id == self.bot.user.id:
+            if before.channel is None and after.channel is not None:
+                    self.disconnect_after_inactivity.start()
+                    self.connected_voice_channels[member.guild.id] = after.channel
+            elif before.channel is not None and after.channel is None:
+                    self.disconnect_after_inactivity.stop()
+                    self.connected_voice_channels[member.guild.id] = None
+                    self.interaction_channel = None
+            elif before.channel is not None and after.channel is not None and before.channel.id != after.channel.id:
+                    self.connected_voice_channels[member.guild.id] = after.channel
+                    if before.channel.members:
+                        for member in before.channel.members:
+                            await member.move_to(after.channel)
+                        await self.interaction.followup.send(f"**✅ - Moved everyone to {after.channel.mention}!**", ephemeral=True)
+                    else:
+                        await self.interaction.followup.send("**❌ - There were no members in the voice channel.**", ephemeral=True)
                 
 
     @app_commands.command(description="Moves everyone in a voice channel to another voice channel")
