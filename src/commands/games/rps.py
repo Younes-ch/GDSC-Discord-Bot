@@ -7,10 +7,16 @@ import discord
 class RPS(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.context_menu = app_commands.ContextMenu(name='Play RPS', callback=self.play_rps)
+        self.context_menu.error(self.rps_error)
+        self.bot.tree.add_command(self.context_menu)
     
     @app_commands.command(description='Play Rock Paper Scissors with your friends!')
     @app_commands.describe(member='The member to play with.')
-    async def rps(self, interaction: discord.Interaction, member : discord.Member):
+    async def rps(self, interaction: discord.Interaction, member: discord.Member):
+        await self.play_rps(interaction, member)
+
+    async def play_rps(self, interaction: discord.Interaction, member : discord.Member):
         if interaction.user == member or member.bot:
             raise app_commands.AppCommandError()
         else:

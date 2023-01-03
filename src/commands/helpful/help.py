@@ -7,9 +7,9 @@ import discord
 cmds = [
             {
                 'name' : '/avatar',
-                'id': '1058100915942473799',
+                'id': '1059891620549509191',
                 'args' : ['[member]', ''],
-                'exmp' : ['</avatar:1058100915942473799> @user', '</avatar:1058100915942473799>'],
+                'exmp' : ['</avatar:1059891620549509191> @user', '</avatar:1059891620549509191>'],
                 'dis' : 'Returns the avatar of the member mentioned or the user who invoked the command (in case no one was mentioned).'
             },
             {

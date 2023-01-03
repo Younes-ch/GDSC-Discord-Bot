@@ -33,6 +33,7 @@ class Bot(commands.Bot):
     print('------')
     try:
       synced = await self.tree.sync()
+      synced = [command for command in synced if command.description]
       print(f"Synced {len(synced)} command(s):")
       for command in synced:
         print('\033[33m', command.name, '\33[0m-->', command.description)

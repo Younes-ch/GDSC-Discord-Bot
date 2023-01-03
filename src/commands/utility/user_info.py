@@ -5,18 +5,23 @@ import discord
 class UserInfo(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.context_menu = app_commands.ContextMenu(name="User information", callback=self.get_user_info)
+        self.bot.tree.add_command(self.context_menu)
 
     @app_commands.command(name='userinfo', description='Display information about a member. yourself if no user is provided.')
     @app_commands.describe(member='The member to get information about. (optional)')
     async def user_info(self, interaction: discord.Interaction, member: discord.Member = None):
+        await self.get_user_info(interaction, member)
+
+    async def get_user_info(self, interaction: discord.Interaction, member: discord.Member = None):
+        if not member:
+            member = interaction.user
         statuses = {
             'online' : '🟢 Online',
             'idle' : '🟠 Idle',
             'dnd' : '⛔ Do not Disturb',
             'offline' : '⚪ Offline',
         }
-        if not member:
-            member = interaction.user
         guild = interaction.guild
         status = statuses[guild.get_member(member.id).status.name]
         embed = discord.Embed(title='User information:', color = member.top_role.color)
