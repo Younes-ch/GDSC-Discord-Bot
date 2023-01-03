@@ -30,7 +30,7 @@ class MoveAll(commands.Cog):
                             await member.move_to(after.channel)
                         await self.interaction.followup.send(f"**✅ - Moved everyone to {after.channel.mention}!**", ephemeral=True)
                     else:
-                        await self.interaction.followup.send("**❌ - There were no members in the voice channel.**", ephemeral=True)
+                        await self.interaction.followup.send(f"**❌ - There were no members in {before.channel.mention}.**", ephemeral=True)
                 
 
     @app_commands.command(description="Moves everyone in a voice channel to another voice channel")
@@ -46,7 +46,7 @@ class MoveAll(commands.Cog):
         try:
             await interaction.response.defer(ephemeral=True)
             await voice_channel.connect(self_deaf=True, self_mute=True)
-            await interaction.followup.send("**✅ - Connected to the voice channel. Now drag me to another voice channel.**")
+            await interaction.followup.send(f"**✅ - Connected to {voice_channel.mention}. Now drag me to another voice channel.**")
             self.interaction: discord.Interaction = interaction
         except discord.ClientException:
             return await interaction.response.send_message("**❌ - I'am already in a voice channel drag me and I'll move everyone.**", ephemeral=True)
