@@ -47,11 +47,25 @@ class Bot(commands.Bot):
         self.invites[guild.id] = await guild.invites()
 
 # ********************************************************* Messages Events ***************************************************************
+  async def on_message_edit(self, before: discord.Message, after: discord.Message):
+    if before.author.bot:
+      return
+    if before.content != after.content:
+      server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(before.guild.id))
+      embed = discord.Embed(description=f'✏️ **Message sent by {before.author.mention} edited in {before.channel.mention}.**\n[Jump to message]({after.jump_url})',
+                            color=0xf1c40f,
+                            timestamp=datetime.datetime.utcnow())
+      embed.set_author(name=before.author, icon_url=before.author.display_avatar.url)
+      embed.add_field(name='Old:', value=f'```{before.content}```', inline=False)
+      embed.add_field(name='New:', value=f'```{after.content}```', inline=False)
+      embed.set_footer(text=before.guild.name)
+      embed.timestamp = datetime.datetime.utcnow()
+      await server_logs_channel.send(embed=embed)
 
   async def on_message_delete(self, message: discord.Message):
     if message.content and message.guild:
       server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(message.guild.id))
-      embed = discord.Embed(description=f'🗑️ **Message sent by {message.author.mention} deleted in {message.channel.mention}**',
+      embed = discord.Embed(description=f'🗑️ **Message sent by {message.author.mention} deleted in {message.channel.mention}.**',
                             color=0xca3b3b,
                             timestamp=datetime.datetime.utcnow())
       embed.set_author(name=message.author, icon_url=message.author.display_avatar.url)
