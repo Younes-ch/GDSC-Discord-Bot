@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from discord.ext import tasks
 import datetime
 import discord
-import discord
 import asyncio
 import os
 
