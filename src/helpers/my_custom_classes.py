@@ -80,7 +80,7 @@ class MyButton(discord.ui.Button):
 
     # ********************************************* Rock Paper Scissors Command *************************************************************
 
-    if self.custom_id == 'rock' or self.custom_id == 'scissors' or self.custom_id == 'paper':
+    if self.custom_id in ('rock', 'scissors', 'paper'):
       self.view.players_choices.append(self.label)
       await self.view.disable()
       if interaction.user == self.view.author:
