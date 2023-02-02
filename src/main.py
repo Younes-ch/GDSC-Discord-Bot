@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from discord.ext import tasks
 import datetime
 import discord
-import discord
 import asyncio
 import os
 
@@ -298,7 +297,7 @@ class Bot(commands.Bot):
       embed.add_field(name='Old name:', value=before.name)
       embed.add_field(name='New name:', value=after.name)
       await server_logs_channel.send(embed=embed)
-    elif isinstance(before, discord.VoiceChannel) or isinstance(before, discord.TextChannel):
+    elif isinstance(before, (discord.VoiceChannel, discord.TextChannel)):
       if before.category != after.category:
         embed.description = f'🔧 **{channel_type} category has been updated**: `{after.name}`'
         embed.add_field(name='Old category:', value=before.category)

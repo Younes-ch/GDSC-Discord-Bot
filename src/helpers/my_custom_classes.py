@@ -80,7 +80,7 @@ class MyButton(discord.ui.Button):
 
     # ********************************************* Rock Paper Scissors Command *************************************************************
 
-    if self.custom_id == 'rock' or self.custom_id == 'scissors' or self.custom_id == 'paper':
+    if self.custom_id in ('rock', 'scissors', 'paper'):
       self.view.players_choices.append(self.label)
       await self.view.disable()
       if interaction.user == self.view.author:
@@ -170,7 +170,7 @@ class ViewForRPSCommand(discord.ui.View):
     elif self.players_choices[0] == self.players_choices[1]:
       winner = None
 
-    if winner == None:
+    if winner is None:
       embed = discord.Embed(title='Results', color=0xffffff)
       embed.add_field(name=f'{self.players_choices[0]} == {self.players_choices[1]}', value='**It\'s a Tie!**', inline=False)
       embed.set_author(name='Game Over!')

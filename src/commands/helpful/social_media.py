@@ -10,7 +10,7 @@ class SocialMedia(commands.Cog):
     @app_commands.command(description='Displays our social media links.')
     async def socialmedia(self, interaction: discord.Interaction):
         view = ViewForSocialMediaCommand(self.bot)
-        if interaction.channel.id == 1057448784562499656 or interaction.channel.id == 1057448996274192494:
+        if interaction.channel.id in (1057448784562499656, 1057448996274192494):
             await interaction.response.send_message('Here are our social media links:', view=view)
         else:
             await interaction.response.send_message('Here are our social media links:', view=view, ephemeral=True)
