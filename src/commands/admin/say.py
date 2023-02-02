@@ -11,6 +11,7 @@ class Say(commands.Cog):
     @app_commands.checks.has_permissions(manage_messages=True)
     async def say(self, interaction: discord.Interaction, message: str, channel: discord.TextChannel = None):
         await interaction.response.defer(ephemeral=True)
+        message = "\n".join(message.split('\\n'))
         if channel:
             await interaction.followup.send(f'Sent the message in {channel.mention}!', ephemeral=True)
             await channel.send(message)
