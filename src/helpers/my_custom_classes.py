@@ -330,7 +330,7 @@ class ViewForSocialMediaCommand(discord.ui.View):
                                 label='GDSC Platform',
                                 url='https://gdsc.community.dev/higher-institute-of-applied-science-and-technology/', emoji=self.google_emoji, row=0)
                             )
-    self.add_item(discord.ui.Button(label='Facebook', url='https://www.facebook.com/GDSC.ISSATSo/', emoji=self.facebook_emoji, row=0))
+    self.add_item(discord.ui.Button(label='Facebook', url='https://www.facebook.com/profile.php?id=61551127118493', emoji=self.facebook_emoji, row=0))
     self.add_item(discord.ui.Button(label='Instagram', url='https://www.instagram.com/gdsc.issatso/', emoji=self.instagram_emoji, row=0))
     self.add_item(discord.ui.Button(label='YouTube', url='https://www.youtube.com/@googledeveloperstudentclub7820', emoji=self.youtube_emoji, row=0))
     self.add_item(discord.ui.Button(label='LinkedIn', url='https://www.linkedin.com/company/gdsc-issatso/', emoji=self.linkedin_emoji, row=1))
