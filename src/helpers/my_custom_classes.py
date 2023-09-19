@@ -318,7 +318,7 @@ class ViewForSocialMediaCommand(discord.ui.View):
   def __init__(self, bot: commands.Bot):
     super().__init__(timeout=None)
     self.google_emoji = bot.get_emoji(1057434239261491200)
-    self.facebook_emoji = bot.get_emoji(1057425555856822373)
+    self.facebook_emoji = bot.get_emoji(1057443077008130169)
     self.instagram_emoji = bot.get_emoji(1057432580661706813)
     self.youtube_emoji = bot.get_emoji(1057432578665226271)
     self.spotify_emoji = bot.get_emoji(1057432573611094096)
