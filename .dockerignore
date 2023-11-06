@@ -1,0 +1,15 @@
+# Ignore version control files
+.git/
+.gitignore
+
+# Ignore Docker-specific files
+Dockerfile
+.dockerignore
+
+# Ignore local development files
+.env
+.deepsource.toml
+
+# Ignore virtual environment files
+.venv/
+
