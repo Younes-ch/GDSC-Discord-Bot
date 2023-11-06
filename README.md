@@ -1,1 +1,1 @@
-A general purpose discord bot that serves some functionalities.
+A general-purpose Discord bot that serves some functionalities
