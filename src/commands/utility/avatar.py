@@ -19,7 +19,7 @@ class Avatar(commands.Cog):
         embed = discord.Embed(title="Avatar Link", url=member.display_avatar.url, color=member.top_role.color)
         embed.set_author(name=member, icon_url=member.display_avatar.url)
         embed.set_image(url=member.display_avatar.url)
-        embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url=interaction.user.display_avatar.url)
         await interaction.response.send_message(embed=embed)
 
 async def setup(bot: commands.Bot):

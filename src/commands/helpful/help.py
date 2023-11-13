@@ -176,7 +176,7 @@ class Help(commands.Cog):
     async def help(self, interaction: discord.Interaction, command: app_commands.Choice[str] | None):
         if command is None:
             embed1 = discord.Embed(title='Commands:', color=0x70e68a)
-            embed1.set_footer(text='Requested by {}'.format(interaction.user), icon_url = interaction.user.display_avatar.url)
+            embed1.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url = interaction.user.display_avatar.url)
             embed1.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
             embed2, embed3, embed4, embed5 = (embed1.copy() for _ in range(4))
             counter = 0

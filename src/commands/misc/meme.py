@@ -23,7 +23,7 @@ class Meme(commands.Cog):
             embed.add_field(name='Upvotes:', value=meme[3])
             embed.add_field(name='Post Link:', value=meme[4])
             embed.add_field(name='Post Author:', value=meme[5])
-            embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url=interaction.user.display_avatar.url)
             await interaction.response.send_message(embed=embed)
 
 async def setup(bot: commands.Bot):

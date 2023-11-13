@@ -11,7 +11,7 @@ class Icon(commands.Cog):
         embed = discord.Embed(title='Server Icon:', color=interaction.user.top_role.color, url=interaction.guild.icon.url)
         embed.set_author(name=interaction.guild.name, icon_url=interaction.guild.icon.url)
         embed.set_image(url=interaction.guild.icon.url)
-        embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url=interaction.user.display_avatar.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot: commands.Bot):

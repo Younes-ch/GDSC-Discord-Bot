@@ -64,6 +64,6 @@ def generate_embed(title, description, author, fields : dict, color = 0x70e68a) 
   embed = discord.Embed(title=title, description=description, color=color)
   embed.add_field(name='Usage:', value="\n".join(fields['usage']))
   embed.add_field(name='Examples:', value="\n".join(fields['examples']))
-  embed.set_footer(text='Requested by {}'.format(author), icon_url=author.display_avatar.url)
+  embed.set_footer(text='Requested by {}'.format(author.name), icon_url=author.display_avatar.url)
 
   return embed

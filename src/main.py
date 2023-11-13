@@ -55,7 +55,7 @@ class Bot(commands.Bot):
       embed = discord.Embed(description=f'✏️ **Message sent by {before.author.mention} edited in {before.channel.mention}.**\n[Jump to message]({after.jump_url})',
                             color=0xf1c40f,
                             timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=before.author, icon_url=before.author.display_avatar.url)
+      embed.set_author(name=before.author.name, icon_url=before.author.display_avatar.url)
       embed.add_field(name='Old:', value=f'```{before.content}```', inline=False)
       embed.add_field(name='New:', value=f'```{after.content}```', inline=False)
       embed.set_footer(text=before.guild.name)
@@ -68,7 +68,7 @@ class Bot(commands.Bot):
       embed = discord.Embed(description=f'🗑️ **Message sent by {message.author.mention} deleted in {message.channel.mention}.**',
                             color=0xca3b3b,
                             timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=message.author, icon_url=message.author.display_avatar.url)
+      embed.set_author(name=message.author.name, icon_url=message.author.display_avatar.url)
       embed.add_field(name='Message Content', value=f'{message.content}', inline=False)
       embed.set_footer(text=message.guild.name)
       await server_logs_channel.send(embed=embed)
@@ -106,7 +106,7 @@ class Bot(commands.Bot):
       background_copy = background.copy()
       background_copy.paste(avatar, (951, 596), mask_im)
       draw = ImageDraw.Draw(background_copy)
-      margin = 410 if len(member.display_name) == 2 else (410 - ((len(member.display_name)/2) * 20))
+      margin = 410 if len(member.name) == 2 else (410 - ((len(member.name)/2) * 20))
       draw.text((margin, 407), '{}'.format(member.display_name), (231, 245, 254), font=font)
       
       background_copy.save("member_landed.png")
@@ -135,7 +135,7 @@ class Bot(commands.Bot):
       
       server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
       embed = discord.Embed(description=f'📥 **{member.mention} has joined the server**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
+      embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
       embed.add_field(name='Account Creation:', value=member.created_at.strftime('%d %B %Y, %I:%M %p'))
       embed.add_field(name='Joined At:', value=member.joined_at.strftime('%d %B %Y, %I:%M %p'))
       embed.set_footer(text=f'{member.guild.name} • User ID: {member.id}', icon_url=member.guild.icon.url)
@@ -155,7 +155,7 @@ class Bot(commands.Bot):
           except discord.errors.Forbidden:
             await after.send(f'**Event Speaker** Role has just been __added__ to your roles in **{after.guild.name}** server, please go ahead and add **[Event Speaker]** *tag* to your nickname')
       embed = discord.Embed(description=f'🔧 **{after.mention} has been given a new role**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
+      embed.set_author(name=f'{after.name}', icon_url=after.display_avatar.url)
       embed.add_field(name='✅ Added role:', value=list(filter(lambda x: x not in before_roles, after_roles))[0])
       embed.set_footer(text=f'User ID: {after.id}')
       embed.set_thumbnail(url=after.display_avatar.url)
@@ -169,14 +169,14 @@ class Bot(commands.Bot):
           except discord.errors.Forbidden:
             await after.send(f'**Event Speaker** Role has just been __removed__ from your roles in **{after.guild.name}** server, please go ahead and remove **[Event Speaker]** *tag* from your nickname')      
       embed = discord.Embed(description=f'🔧 **{after.mention} has lost a role**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
+      embed.set_author(name=f'{after.name}', icon_url=after.display_avatar.url)
       embed.add_field(name='❌ Removed role:', value=list(filter(lambda x: x not in after_roles, before_roles))[0])
       embed.set_footer(text=f'User ID: {after.id}')
       embed.set_thumbnail(url=after.display_avatar.url)
       await server_logs_channel.send(embed=embed)
     elif before.display_name != after.display_name:
       embed = discord.Embed(description=f'🔧 **{after.mention} has changed their nickname**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
+      embed.set_author(name=f'{after.name}', icon_url=after.display_avatar.url)
       embed.add_field(name='Old nickname:', value=f'`{before.display_name}`')
       embed.add_field(name='New nickname:', value=f'`{after.display_name}`')
       embed.set_footer(text=f'User ID: {after.id}')
@@ -184,7 +184,7 @@ class Bot(commands.Bot):
       await server_logs_channel.send(embed=embed)
     elif before.display_avatar.key != after.display_avatar.key:
       embed = discord.Embed(description=f'🔧 **{after.mention} has changed their avatar**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{after}', icon_url=after.display_avatar.url)
+      embed.set_author(name=f'{after.name}', icon_url=after.display_avatar.url)
       embed.add_field(name='Old avatar:', value=f'[Before]({before.display_avatar.url})')
       embed.add_field(name='New avatar:', value=f'[After]({after.display_avatar.url})')
       embed.set_footer(text=f'User ID: {after.id}')
@@ -196,7 +196,7 @@ class Bot(commands.Bot):
       for mutual_guild in after.mutual_guilds:
         server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(mutual_guild.id))
         embed = discord.Embed(description=f'🔧 **{after.mention} has changed their avatar**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
-        embed.set_author(name=f'{after}', icon_url=before.display_avatar.url)
+        embed.set_author(name=f'{after.name}', icon_url=before.display_avatar.url)
         embed.add_field(name='Old avatar:', value=f'[Before]({before.display_avatar.url})')
         embed.add_field(name='New avatar:', value=f'[After]({after.display_avatar.url})')
         embed.set_footer(text=f'User ID: {after.id}')
@@ -208,7 +208,7 @@ class Bot(commands.Bot):
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
 
     embed = discord.Embed(description=f'📤 **{member.mention} has left the server**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
-    embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
+    embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
     embed.set_footer(text=f'User ID: {member.id}', icon_url=member.guild.icon.url)
     embed.set_thumbnail(url=member.display_avatar.url)
     await server_logs_channel.send(embed=embed)
@@ -217,15 +217,15 @@ class Bot(commands.Bot):
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
     if before.channel is None and after.channel is not None:
       embed = discord.Embed(description=f'📥 **{member.mention} joined voice channel `{after.channel.name}`**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
+      embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
       await server_logs_channel.send(embed=embed)
     elif before.channel is not None and after.channel is None:
       embed = discord.Embed(description=f'📤 **{member.mention} left voice channel `{before.channel.name}`**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
+      embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
       await server_logs_channel.send(embed=embed)
     elif before.channel is not None and after.channel is not None and before.channel.id != after.channel.id:
       embed = discord.Embed(description=f'🔁 **{member.mention} has switched voice channels**', color=0x3498db, timestamp=datetime.datetime.utcnow())
-      embed.set_author(name=f'{member}', icon_url=member.display_avatar.url)
+      embed.set_author(name=f'{member.name}', icon_url=member.display_avatar.url)
       embed.add_field(name='Voice channel:', value=f'{before.channel.mention} ➡️ {after.channel.mention}')
       await server_logs_channel.send(embed=embed)
 

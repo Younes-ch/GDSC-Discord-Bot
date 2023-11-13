@@ -39,7 +39,7 @@ class Weather(commands.Cog):
             embed.add_field(name='Humidity:', value=humidity)
             embed.add_field(name='Wind speed:', value=wind_speed)
             embed.set_thumbnail(url=weather_icon)
-            embed.set_footer(text=f'Requested by {interaction.user}', icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text=f'Requested by {interaction.user.name}', icon_url=interaction.user.display_avatar.url)
             await interaction.response.send_message(embed=embed)
     
 async def setup(bot: commands.Bot):

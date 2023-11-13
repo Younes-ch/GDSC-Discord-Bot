@@ -15,7 +15,7 @@ class Quote(commands.Cog):
         description=quote,
         color=interaction.user.top_role.color)
         embed.add_field(name='Author:', value=f':book: *{author}*')
-        embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url=interaction.user.display_avatar.url)
         await interaction.response.send_message(embed=embed)
 
 async def setup(bot: commands.Bot):

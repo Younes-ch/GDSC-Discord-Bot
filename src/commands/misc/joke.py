@@ -22,7 +22,7 @@ class Joke(commands.Cog):
         else:
             embed = discord.Embed(title='Joke:', description=joke, color=interaction.user.top_role.color)
             embed.add_field(name='Category:', value=f':book: *{joke_category}*')
-            embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url=interaction.user.display_avatar.url)
             await interaction.response.send_message(embed=embed)
 
 async def setup(bot: commands.Bot):

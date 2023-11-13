@@ -35,7 +35,7 @@ class UserInfo(commands.Cog):
         embed.add_field(name='Joined at', value=member.joined_at.strftime("%d-%b-%Y"))
         embed.set_thumbnail(url=member.display_avatar.url)
         embed.add_field(name='Roles', value="\n".join([x.mention for x in member.roles if x.name != '@everyone']) if len(member.roles) > 1 else 'N/A')
-        embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url = interaction.user.display_avatar.url)
+        embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url = interaction.user.display_avatar.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot: commands.Bot):

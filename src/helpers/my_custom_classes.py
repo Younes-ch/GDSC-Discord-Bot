@@ -71,7 +71,7 @@ class MyButton(discord.ui.Button):
       embed.add_field(name='Downvotes:', value=most_upvoted_answer_down_vote_count)
       embed.add_field(name='Answer:', value=most_upvoted_answer_body, inline=False)
       embed.set_thumbnail(url=most_upvoted_answer_owner_profile_image)
-      embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
+      embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url=interaction.user.display_avatar.url)
       await interaction.response.send_message(embed=embed)
 
     elif self.custom_id == 'no_most_upvoted_answer':
@@ -259,7 +259,7 @@ class SelectStackOverflowQuestion(discord.ui.Select):
         embed.add_field(name="Downvotes", value=answer_down_vote_count)
         embed.add_field(name="Answer:", value=markdown_answer)
         embed.set_thumbnail(url=answer_owner_avatar)
-        embed.set_footer(text='Requested by {}'.format(self.interaction.user), icon_url=self.interaction.user.display_avatar.url)
+        embed.set_footer(text='Requested by {}'.format(self.interaction.user.name), icon_url=self.interaction.user.display_avatar.url)
         await interaction.response.send_message("Here is the accepted answer to your question:", embed=embed)
       else:
         view = ViewForYesOrNoMostUpvotedAnswer(interaction, question_id, self.converter)

@@ -9,7 +9,7 @@ class Ping(commands.Cog):
     @app_commands.command(description='Returns the bot\'s latency.')
     async def ping(self, interaction: discord.Interaction):
         embed = discord.Embed(title='🏓 Pong!', description=f'✅ {round(self.bot.latency * 1000)}ms', color=interaction.user.top_role.color)
-        embed.set_footer(text='Requested by {}'.format(interaction.user), icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url=interaction.user.display_avatar.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot: commands.Bot):
