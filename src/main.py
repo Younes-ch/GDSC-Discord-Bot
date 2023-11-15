@@ -236,15 +236,16 @@ class Bot(commands.Bot):
         guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False)
       }
       found = False
+      current_member_count = len(list(filter(lambda member: not member.bot, guild.members)))
       for vc in guild.voice_channels:
         if vc.name.lower().startswith('member count:'):
-          member_count = int(vc.name.split(':')[1].strip())
-          if member_count != guild.member_count:
-            await vc.edit(name='Member count: {}'.format(guild.member_count), overwrites=overwrites, user_limit=0, position=0)
+          old_member_count = int(vc.name.split(':')[1].strip())
+          if old_member_count != current_member_count:
+            await vc.edit(name='Member count: {}'.format(current_member_count), overwrites=overwrites, user_limit=0, position=0)
           found = True
           break
       if not found:
-        await guild.create_voice_channel(name='Member count: {}'.format(guild.member_count), overwrites=overwrites, position=0, user_limit=0)
+        await guild.create_voice_channel(name='Member count: {}'.format(current_member_count), overwrites=overwrites, position=0, user_limit=0)
     print('Updated')
 
 # ****************************************************** Guild Events ******************************************************
