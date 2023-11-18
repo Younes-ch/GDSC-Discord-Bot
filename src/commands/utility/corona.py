@@ -1,3 +1,4 @@
+from datetime import datetime
 from discord.ext import commands
 from discord import app_commands
 import requests
@@ -29,15 +30,10 @@ class Corona(commands.Cog):
             embed = discord.Embed(description=':rolling_eyes: - {} I can\'t find a country named **{}**!'.format(interaction.user.name, country), color=0xe74c3c)
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
-            url = "https://country-info.p.rapidapi.com/search"
-            if country == 'Usa':
-                country = 'United states'
-            querystring = {"query":country}
-            headers = {
-            "X-RapidAPI-Key": "ec2f8ccf8bmshbf1cf334816d19ep12966ejsnbf378abe0c43",
-            "X-RapidAPI-Host": "country-info.p.rapidapi.com"
-            }
-            response = requests.request("GET", url, headers=headers, params=querystring)
+            url = "https://restcountries.com/v3.1/name/{}".format(country)
+            response = requests.request("GET", url)
+            if response.status_code == 404:
+                flag = ":flag_white:"
 
             flag = json.loads(response.text)[0]['flag']
             embed = discord.Embed(title=f'Corona Statistics in {country} {flag}:', color=0xe74c3c)
@@ -49,7 +45,7 @@ class Corona(commands.Cog):
             total_cases = json_data['response'][0]['cases']['total']
             new_deaths = json_data['response'][0]['deaths']['new']
             total_deaths = json_data['response'][0]['deaths']['total']
-            day = json_data['response'][0]['day']
+            day = datetime.strptime(json_data['response'][0]['day'], '%Y-%m-%d').strftime('%d-%b-%Y')
             embed.add_field(name='Continent:', value=continent)
             embed.add_field(name='Country:', value=country)
             embed.add_field(name='Population:', value=population)
