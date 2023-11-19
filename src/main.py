@@ -405,7 +405,7 @@ class Bot(commands.Bot):
   async def on_guild_role_create(self, role: discord.Role):
     await asyncio.sleep(60)
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(role.guild.id))
-    embed = discord.Embed(description=f'🆕 **Role has been created**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
+    embed = discord.Embed(description='🆕 **Role has been created**', color=0x2ecc71, timestamp=datetime.datetime.utcnow())
     embed.add_field(name='🏷️ Name:', value=f'`{role.name}`')
     embed.add_field(name='🪪 ID:', value=f'`{role.id}`')
     embed.add_field(name='🎨 Color:', value=f'`#{role.color.value:0>6x}`')
@@ -415,7 +415,7 @@ class Bot(commands.Bot):
   async def on_guild_role_update(self, before: discord.Role, after: discord.Role):
     await asyncio.sleep(60)
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(before.guild.id))
-    embed = discord.Embed(description=f'🔧 **Role has been updated**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
+    embed = discord.Embed(description='🔧 **Role has been updated**', color=0xf1c40f, timestamp=datetime.datetime.utcnow())
     embed.add_field(name='🏷️ Name:', value=f'`{after.name}`')
     embed.add_field(name='🪪 ID:', value=f'`{after.id}`')
     embed.add_field(name='\u200b', value='\u200b')
@@ -435,7 +435,7 @@ class Bot(commands.Bot):
   async def on_guild_role_delete(self, role: discord.Role):
     await asyncio.sleep(60)
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(role.guild.id))
-    embed = discord.Embed(description=f'🗑️ **Role has been deleted**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
+    embed = discord.Embed(description='🗑️ **Role has been deleted**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
     embed.add_field(name='🏷️ Name:', value=f'`{role.name}`')
     embed.add_field(name='🪪 ID:', value=f'`{role.id}`')
     embed.add_field(name='🎨 Color:', value=f'`#{role.color.value:0>6x}`')
@@ -447,7 +447,7 @@ class Bot(commands.Bot):
     embed = discord.Embed(timestamp=datetime.datetime.utcnow())
     embed.set_footer(text=f'{guild.name}')
     if len(before) < len(after):
-      embed.description = f'🆕 **Emoji has been added**'
+      embed.description = '🆕 **Emoji has been added**'
       embed.color = 0x2ecc71
       for emoji in after:
         if emoji not in before:
@@ -456,7 +456,7 @@ class Bot(commands.Bot):
           embed.set_thumbnail(url=emoji.url)
           await server_logs_channel.send(embed=embed)
     elif len(before) > len(after):
-      embed.description = f'🗑️ **Emoji has been deleted**'
+      embed.description = '🗑️ **Emoji has been deleted**'
       embed.color = 0xca3b3b
       for emoji in before:
         if emoji not in after:
