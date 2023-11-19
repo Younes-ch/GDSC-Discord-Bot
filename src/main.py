@@ -47,7 +47,7 @@ class Bot(commands.Bot):
         await guild.owner.send(':rolling_eyes: Sorry, I left `{}` because I\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
         await guild.leave()
       else:
-        self.guild_members[guild.id] = guild.members
+        self.guild_members[guild.id] = list(guild.members)
         self.guild_voice_channels[guild.id] = guild.voice_channels
         self.invites[guild.id] = await guild.invites()
     self.manage_server_stats_channels.start()
