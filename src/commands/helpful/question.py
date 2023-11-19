@@ -39,7 +39,7 @@ class Question(commands.Cog):
                     questions_id.append(data["items"][i]["question_id"])
                 view = ViewForQuestionCommand(interaction, questions, questions_id, converter)
                 await interaction.response.defer()
-                await interaction.followup.send(f"Here are the top 5 similar questions that I found on Stack Overflow:", view=view)
+                await interaction.followup.send("Here are the top 5 similar questions that I found on Stack Overflow:", view=view)
             else:
                 await interaction.response.send_message("I'm sorry, I could not find any similar posted question to that question on Stack Overflow.", ephemeral=True)
         else:
