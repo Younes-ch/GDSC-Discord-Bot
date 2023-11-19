@@ -1,4 +1,3 @@
-import time
 from helpers.my_custom_functions import find_invite_by_code, get_corresponding_server_logs_channel_id
 from helpers.my_custom_classes import ViewForSocialMediaCommand
 from PIL import Image, ImageFont, ImageDraw
@@ -9,7 +8,6 @@ import datetime
 import discord
 import asyncio
 import os
-import json
 
 class Bot(commands.Bot):
   def __init__(self):
