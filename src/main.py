@@ -1,3 +1,4 @@
+import time
 from helpers.my_custom_functions import find_invite_by_code, get_corresponding_server_logs_channel_id
 from helpers.my_custom_classes import ViewForSocialMediaCommand
 from PIL import Image, ImageFont, ImageDraw
@@ -8,12 +9,15 @@ import datetime
 import discord
 import asyncio
 import os
+import json
 
 class Bot(commands.Bot):
   def __init__(self):
     super().__init__(command_prefix='&', intents=discord.Intents.all(), activity=discord.Activity(type=discord.ActivityType.listening, name="/help"),
     help_command=None)
     self.invites = {}
+    self.guild_members = {}
+    self.guild_voice_channels = {}
 
   async def setup_hook(self):
     groups = [folder for folder in os.listdir('src/commands') if folder != '__pycache__']
@@ -38,13 +42,15 @@ class Bot(commands.Bot):
         print('\033[33m', command.name, '\33[0m-->', command.description)
     except Exception as e:
       print(e)
-    self.server_stats.start()
     for guild in self.guilds:
-      if not guild.id in [828940910053556224, 783404400416391189]:
+      if guild.id not in [828940910053556224, 783404400416391189]:
         await guild.owner.send(':rolling_eyes: Sorry, I left `{}` because I\'m a private bot that only works in `GDSC ISSATSo Community Server!`'.format(guild.name))
         await guild.leave()
       else:
+        self.guild_members[guild.id] = guild.members
+        self.guild_voice_channels[guild.id] = guild.voice_channels
         self.invites[guild.id] = await guild.invites()
+    self.manage_server_stats_channels.start()
 
 # ********************************************************* Messages Events ***************************************************************
   async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -89,6 +95,7 @@ class Bot(commands.Bot):
         await member.add_roles(member.guild.get_role(918937715217690634), reason="New Member")
       else:
         await member.add_roles(member.guild.get_role(835602765048840252), reason="New Bot")
+    self.guild_members[member.guild.id].append(member)
 
     if not member.bot:
       avatar_file_name = "avatar.png"
@@ -190,6 +197,9 @@ class Bot(commands.Bot):
       embed.set_footer(text=f'User ID: {after.id}')
       embed.set_thumbnail(url=after.display_avatar.url)
       await server_logs_channel.send(embed=embed)
+    elif before.status != after.status:
+      self.guild_members = [*map(lambda member: after if member.id == after.id else member, self.guild_members[after.guild.id])]
+
 
   async def on_user_update(self, before: discord.User, after: discord.User):
     if before.display_avatar.key != after.display_avatar.key:
@@ -205,6 +215,7 @@ class Bot(commands.Bot):
           
   async def on_member_remove(self, member: discord.Member):
     self.invites[member.guild.id] = await member.guild.invites()
+    self.guild_members[member.guild.id].remove(member)
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
 
     embed = discord.Embed(description=f'📤 **{member.mention} has left the server**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
@@ -229,8 +240,8 @@ class Bot(commands.Bot):
       embed.add_field(name='Voice channel:', value=f'{before.channel.mention} ➡️ {after.channel.mention}')
       await server_logs_channel.send(embed=embed)
 
-  @tasks.loop(minutes=5.0, reconnect=True)
-  async def server_stats(self):
+  @tasks.loop(minutes=7, reconnect=True)
+  async def manage_server_stats_channels(self):
     for guild in self.guilds:
       overwrites = {
         guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False)
@@ -244,7 +255,8 @@ class Bot(commands.Bot):
       else:
         server_stats_category_channel = list(filter(lambda category: category.name == category_name, guild_categories))[0]
       
-      guild_members = guild.members
+      guild_members = self.guild_members[guild.id]
+      guild_stats_voice_channels = [voice_channel for voice_channel in self.guild_voice_channels[guild.id] if voice_channel.name.startswith(('📅', '⏰', '🟢', 'Users', 'Bots'))]
 
       current_user_count = len(list(filter(lambda member: not member.bot, guild_members)))
       current_bot_count = guild.member_count - current_user_count
@@ -255,45 +267,41 @@ class Bot(commands.Bot):
       idle_user_count = len(list(filter(lambda member: not member.bot and member.status == discord.Status.idle, guild_members)))
 
       correct_timezone = datetime.timezone(datetime.timedelta(hours=1))
-      current_time = datetime.datetime.now(correct_timezone).strftime("%I:%M %p")
+      current_time = datetime.datetime.now(correct_timezone)
 
       found_channels = {
         'date': { 'name': f'📅 {datetime.datetime.now().strftime("%d %B %Y")}', 'found': False, 'position': 0 },
-        'time': { 'name': f'⏰ {current_time}', 'found': False, 'position': 1 },
+        'time': { 'name': f'⏰ {current_time.strftime("%I:%M %p")}', 'found': False, 'position': 1 },
         'users status' : { 'name': f'🟢 {online_user_count} ⛔ {dnd_user_count} 🌙 {idle_user_count}', 'found': False, 'position': 2 },
         'users': { 'name': f'Users: {current_user_count}', 'found': False, 'position': 3 },
         'bots': { 'name': f'Bots: {current_bot_count}', 'found': False, 'position': 4 }
       }
 
-      for vc in guild.voice_channels:
-        if vc.name.startswith(('📅', '⏰', '🟢', 'Users', 'Bots')):
-          if vc.name.startswith('📅'):
-            if vc.name != found_channels['date']['name']:
-              await vc.edit(name=found_channels['date']['name'], user_limit=0, position=found_channels['date']['position'])
-            found_channels['date']['found'] = True
-          elif vc.name.startswith('⏰'):
-            if vc.name != found_channels['time']['name']:
-              await vc.edit(name=found_channels['time']['name'], user_limit=0, position=found_channels['time']['position'])
-            found_channels['time']['found'] = True
-          elif vc.name.startswith('🟢'):
-            if vc.name != found_channels['users status']['name']:
-              await vc.edit(name=found_channels['users status']['name'], user_limit=0, position=found_channels['users status']['position'])
-            found_channels['users status']['found'] = True
-          elif vc.name.startswith('Users'):
-            if vc.name != found_channels['users']['name']:
-              await vc.edit(name=found_channels['users']['name'], user_limit=0, position=found_channels['users']['position'])
-            found_channels['users']['found'] = True
-          elif vc.name.startswith('Bots'):
-            if vc.name != found_channels['bots']['name']:
-              await vc.edit(name=found_channels['bots']['name'], user_limit=0, position=found_channels['bots']['position'])
-            found_channels['bots']['found'] = True
-          if vc.category_id != server_stats_category_channel.id:
-            position_to_move_to = list(filter(lambda channel: channel['name'] == vc.name, found_channels.values()))[0]['position']
-            await vc.move(beginning=True, offset=position_to_move_to, category=server_stats_category_channel)
-      for channel, found in found_channels.items():
-        if not found['found']:
-          await guild.create_voice_channel(name=found_channels[channel]['name'], position=found['position'], user_limit=0, category=server_stats_category_channel)
-    print('Updated')
+      for vc in guild_stats_voice_channels:
+        if vc.name.startswith('📅'):
+          if vc.name != found_channels['date']['name']:
+            await vc.edit(name=found_channels['date']['name'], position=found_channels['date']['position'])
+          found_channels['date']['found'] = True
+        elif vc.name.startswith('⏰'):
+          if vc.name != found_channels['time']['name']:
+            await vc.edit(name=found_channels['time']['name'], position=found_channels['time']['position'])
+          found_channels['time']['found'] = True
+        elif vc.name.startswith('🟢'):
+          if vc.name != found_channels['users status']['name']:
+            await vc.edit(name=found_channels['users status']['name'], position=found_channels['users status']['position'])
+          found_channels['users status']['found'] = True
+        elif vc.name.startswith('Users'):
+          if vc.name != found_channels['users']['name']:
+            await vc.edit(name=found_channels['users']['name'], position=found_channels['users']['position'])
+          found_channels['users']['found'] = True
+        elif vc.name.startswith('Bots'):
+          if vc.name != found_channels['bots']['name']:
+            await vc.edit(name=found_channels['bots']['name'], position=found_channels['bots']['position'])
+          found_channels['bots']['found'] = True
+        if vc.category_id != server_stats_category_channel.id:
+          position_to_move_to = list(filter(lambda channel: channel['name'] == vc.name, found_channels.values()))[0]['position']
+          await vc.move(beginning=True, offset=position_to_move_to, category=server_stats_category_channel)
+    print('Server stats task executed.')
 
 # ****************************************************** Guild Events ******************************************************
 
@@ -303,6 +311,9 @@ class Bot(commands.Bot):
       await guild.leave()
   
   async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
+
+    self.guild_voice_channels[channel.guild.id].append(channel)
+
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(channel.guild.id))
     if isinstance(channel, discord.VoiceChannel):
       channel_type = 'Voice Channel'
@@ -341,6 +352,7 @@ class Bot(commands.Bot):
     embed.set_footer(text=f'Channel ID: {before.id}')
 
     if before.name != after.name:
+      self.guild_voice_channels[after.guild.id] = [*map(lambda vc: after if vc.id == after.id else vc, self.guild_voice_channels[after.guild.id])]
       if after.name.startswith(('📅', '⏰', '🟢')):
         return
       embed.description = f'🔧 **{channel_type} name has been updated**:'
@@ -354,6 +366,7 @@ class Bot(commands.Bot):
         embed.add_field(name='New category:', value=after.category)
         await server_logs_channel.send(embed=embed)
       elif isinstance(before, discord.VoiceChannel):
+        self.guild_voice_channels = [*map(lambda vc: after if vc.id == after.id else vc, self.guild_voice_channels[after.guild.id])]
         if before.user_limit != after.user_limit:
           embed.description = f'🔧 **{channel_type} user limit has been updated**: `{after.name}`'
           embed.add_field(name='Old user limit:', value=f'{before.user_limit} users')
@@ -372,6 +385,8 @@ class Bot(commands.Bot):
           await server_logs_channel.send(embed=embed)
   
   async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
+    self.guild_voice_channels[channel.guild.id].remove(channel)
+
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(channel.guild.id))
     if isinstance(channel, discord.VoiceChannel):
       channel_type = 'Voice Channel'

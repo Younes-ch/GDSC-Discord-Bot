@@ -57,7 +57,6 @@ class Snipe(commands.Cog):
         for channel_id in self.snipes:
             messages = self.snipes[channel_id]
             self.snipes[channel_id] = messages[-min(10, len(messages)):]
-        print("Cleared")
         
 async def setup(bot: commands.Bot):
     await bot.add_cog(Snipe(bot))
