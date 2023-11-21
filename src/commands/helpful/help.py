@@ -183,30 +183,18 @@ class Help(commands.Cog):
             for cmd in cmds:
                 counter += 1
                 if counter <= 5:
-                    if "&announce" in cmd["name"]:
-                        embed1.add_field(name=f'{cmd["name"]}:', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
-                    else:
-                        embed1.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
+                    embed1.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
                 elif counter > 5 and counter <= 10:
                     if "&announce" in cmd["name"]:
                         embed2.add_field(name=f'{cmd["name"]}:', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
                     else:
                         embed2.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
                 elif counter > 11 and counter <= 16:
-                    if "&announce" in cmd["name"]:
-                        embed3.add_field(name=f'{cmd["name"]}:', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
-                    else:
-                        embed3.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
+                    embed3.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
                 elif counter > 16 and counter <= 21:
-                    if "&announce" in cmd["name"]:
-                        embed4.add_field(name=f'{cmd["name"]}:', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
-                    else:
-                        embed4.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
+                    embed4.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
                 else:
-                    if "&announce" in cmd["name"]:
-                        embed5.add_field(name=f'{cmd["name"]}:', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
-                    else:
-                        embed5.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
+                    embed5.add_field(name=f'<{cmd["name"]}:{cmd["id"]}>', value=f'`{cmd["name"]} {" | ".join([arg for arg in cmd["args"] if arg])}` : {cmd["dis"]}', inline=False)
             listOfEmbeds = [embed1, embed2, embed3, embed4, embed5]
             await interaction.response.send_message(embed=embed1, ephemeral=True)
             view = ViewForHelpCommand(interaction=interaction, listOfEmbeds=listOfEmbeds)
