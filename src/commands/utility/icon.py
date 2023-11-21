@@ -12,7 +12,7 @@ class Icon(commands.Cog):
         embed.set_author(name=interaction.guild.name, icon_url=interaction.guild.icon.url)
         embed.set_image(url=interaction.guild.icon.url)
         embed.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url=interaction.user.display_avatar.url)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Icon(bot))
