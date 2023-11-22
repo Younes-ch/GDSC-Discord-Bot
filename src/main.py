@@ -1,3 +1,4 @@
+import time
 from helpers.my_custom_functions import find_invite_by_code, get_corresponding_server_logs_channel_id
 from helpers.my_custom_classes import ViewForSocialMediaCommand
 from PIL import Image, ImageFont, ImageDraw
@@ -64,10 +65,10 @@ class Bot(commands.Bot):
         self.guild_members[guild.id] = list(guild.members)
         self.guild_voice_channels[guild.id] = guild.voice_channels
         self.invites[guild.id] = await guild.invites()
-    self.update_time_channel.start()
-    self.update_date_channel.start()
+        await self.update_member_count(guild)
+    # self.update_time_channel.start()
     self.update_member_status_count.start()
-    self.update_member_count.start()
+    self.update_date_channel.start()
 
 # ********************************************************* Messages Events ***************************************************************
   async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -99,6 +100,15 @@ class Bot(commands.Bot):
 # ********************************************************* Member Events ***************************************************************
 
   async def on_member_join(self, member: discord.Member):
+    self.guild_members[member.guild.id].append(member)
+
+    if not member.bot:
+      users_count_channel = [vc for vc in self.guild_voice_channels[member.guild.id] if vc.name.startswith('Users')][0]
+      await self.update_member_count(member.guild, users_count_channel)
+    else:
+      bots_count_channel = [vc for vc in self.guild_voice_channels[member.guild.id] if vc.name.startswith('Bots')][0]
+      await self.update_member_count(member.guild, bots_count_channel)
+
     if member.guild.id == 828940910053556224:
       welcome_channel = self.get_channel(935969094652551189)
       invites_channel = self.get_channel(940729129689554944)
@@ -108,11 +118,10 @@ class Bot(commands.Bot):
       invites_channel = self.get_channel(941418127261040720)
       if not member.bot:
         await rules_channel.send(member.mention, delete_after=0.1)
-        await member.add_roles(member.guild.get_role(835557953057718314), reason="New Member")
-        await member.add_roles(member.guild.get_role(918937715217690634), reason="New Member")
+        await member.add_roles(member.guild.get_role(835557953057718314), reason="New User")
+        await member.add_roles(member.guild.get_role(918937715217690634), reason="New User")
       else:
         await member.add_roles(member.guild.get_role(835602765048840252), reason="New Bot")
-    self.guild_members[member.guild.id].append(member)
 
     if not member.bot:
       avatar_file_name = "avatar.png"
@@ -216,8 +225,6 @@ class Bot(commands.Bot):
       embed.set_thumbnail(url=after.display_avatar.url)
       await server_logs_channel.send(embed=embed)
 
-
-
   async def on_user_update(self, before: discord.User, after: discord.User):
     if before.display_avatar.key != after.display_avatar.key:
       for mutual_guild in after.mutual_guilds:
@@ -231,8 +238,16 @@ class Bot(commands.Bot):
         await server_logs_channel.send(embed=embed)
           
   async def on_member_remove(self, member: discord.Member):
-    self.invites[member.guild.id] = await member.guild.invites()
     self.guild_members[member.guild.id].remove(member)
+
+    if member.bot:
+      bots_count_channel = [vc for vc in self.guild_voice_channels[member.guild.id] if vc.name.startswith('Bots')][0]
+      await self.update_member_count(member.guild, bots_count_channel)
+    else:
+      users_count_channel = [vc for vc in self.guild_voice_channels[member.guild.id] if vc.name.startswith('Users')][0]
+      await self.update_member_count(member.guild, users_count_channel)
+
+    self.invites[member.guild.id] = await member.guild.invites()
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(member.guild.id))
 
     embed = discord.Embed(description=f'📤 **{member.mention} has left the server**', color=0xca3b3b, timestamp=datetime.datetime.utcnow())
@@ -259,40 +274,35 @@ class Bot(commands.Bot):
 
 # ********************************************************* Tasks ***************************************************************
   
-  @tasks.loop(minutes=5, reconnect=True)
+  @tasks.loop(time=datetime.time(hour=0, minute=0, second=0, tzinfo=datetime.timezone(datetime.timedelta(hours=1))))
   async def update_date_channel(self):
     for guild in self.guilds:
-      try:
-        date_channel = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('📅')][0]
-        await date_channel.delete()
-      except IndexError:
-        pass
-      finally:
-        date_channel = await guild.create_voice_channel(name=f'📅 {datetime.datetime.now().strftime("%d %B %Y")}',
-                                                        user_limit=0, category=self.server_stats_category_channel[guild.id],
-                                                        position=0)
-    print('Date channel task executed.')
+      current_time = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=1)))
+      possible_channels = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('📅')]
+      if not possible_channels:
+        await guild.create_voice_channel(name=f'📅 {current_time.strftime("%d %B %Y")}', category=self.server_stats_category_channel[guild.id])
+      else:
+        channel = possible_channels[0]
+        await channel.edit(name=f'📅 {current_time.strftime("%d %B %Y")}', category=self.server_stats_category_channel[guild.id])
+    print(f'Updated Date Channel at: {current_time.strftime("%d %B %Y - %I:%M:%S %p")}')
 
-  @tasks.loop(minutes=1, reconnect=True)
+  @tasks.loop(minutes=1)
   async def update_time_channel(self):
     correct_timezone = datetime.timezone(datetime.timedelta(hours=1))
     current_time = datetime.datetime.now(correct_timezone)
 
     for guild in self.guilds:
-      try:
+      possible_channels = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('⏰')]
+      if not possible_channels:
+        await guild.create_voice_channel(name=f'⏰ {current_time.strftime("%I:%M %p")}', category=self.server_stats_category_channel[guild.id])
+      else:
+        channel = possible_channels[0]
+        await channel.edit(name=f'⏰ {current_time.strftime("%I:%M %p")}', category=self.server_stats_category_channel[guild.id])
+   
 
-        time_channel = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('⏰')][0]
-        await time_channel.delete()
-      except IndexError:
-        pass
-      finally:
-        time_channel = await guild.create_voice_channel(name=f'⏰ {current_time.strftime("%I:%M %p")}',
-                                                        user_limit=0, category=self.server_stats_category_channel[guild.id],
-                                                        position=1)
-    print('Time channel task executed.')
-
-  @tasks.loop(minutes=2, reconnect=True)
+  @tasks.loop(minutes=10)
   async def update_member_status_count(self):
+    current_time = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=1)))
     for guild in self.guilds:
       guild_members = self.guild_members[guild.id]
 
@@ -300,44 +310,41 @@ class Bot(commands.Bot):
       dnd_user_count = len(list(filter(lambda member: not member.bot and member.status == discord.Status.dnd, guild_members)))
       idle_user_count = len(list(filter(lambda member: not member.bot and member.status == discord.Status.idle, guild_members)))
 
-      try:
-        users_status_channel = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('🟢')][0]
-        await users_status_channel.delete()
-      except IndexError:
-        pass
-      finally:
-        users_status_channel = await guild.create_voice_channel(name=f'🟢 {online_user_count} ⛔ {dnd_user_count} 🌙 {idle_user_count}',
-                                                                user_limit=0, category=self.server_stats_category_channel[guild.id],
-                                                                position=2)
+      possible_channels = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('🟢')]
+      if not possible_channels:
+        await guild.create_voice_channel(name=f'🟢 {online_user_count} ⛔ {dnd_user_count} 🌙 {idle_user_count}',
+                                         category=self.server_stats_category_channel[guild.id])
+      else:
+        channel = possible_channels[0]
+        await channel.edit(name=f'🟢 {online_user_count} ⛔ {dnd_user_count} 🌙 {idle_user_count}', category=self.server_stats_category_channel[guild.id])
+    print(f'Updated User status Channel at: {current_time.strftime("%d %B %Y - %I:%M:%S %p")}')
         
-    print('Users status channel task executed.')
-
-  @tasks.loop(minutes=3, reconnect=True)
-  async def update_member_count(self):
-    for guild in self.guilds:
+  async def update_member_count(self, guild: discord.Guild, channel: discord.VoiceChannel = None):
+    
       guild_members = self.guild_members[guild.id]
       current_user_count = len(list(filter(lambda member: not member.bot, guild_members)))
       current_bot_count = guild.member_count - current_user_count
 
-      try:
-        users_channel = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('Users')][0]
-        await users_channel.delete()
-      except IndexError:
-        pass
-      finally:
-        users_channel = await guild.create_voice_channel(name=f'Users: {current_user_count}',
-                                                         user_limit=0, category=self.server_stats_category_channel[guild.id],
-                                                         position=3)
-      try:
-        bots_channel = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('Bots')][0]
-        await bots_channel.delete()
-      except IndexError:
-        pass
-      finally:
-        bots_channel = await guild.create_voice_channel(name=f'Bots: {current_bot_count}',
-                                                        user_limit=0, category=self.server_stats_category_channel[guild.id],
-                                                        position=4)
-    print('Users & Bots channel task executed.')
+      if not channel:
+        possible_channels = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('Users')]
+        if not possible_channels:
+          await guild.create_voice_channel(name=f'Users: {current_user_count}', category=self.server_stats_category_channel[guild.id])
+        else:
+          channel = possible_channels[0]
+          await channel.edit(name=f'Users: {current_user_count}', category=self.server_stats_category_channel[guild.id])
+        
+        possible_channels = [vc for vc in self.guild_voice_channels[guild.id] if vc.name.startswith('Bots')]
+        if not possible_channels:
+          await guild.create_voice_channel(name=f'Bots: {current_bot_count}', category=self.server_stats_category_channel[guild.id])
+        else:
+          channel = possible_channels[0]
+          await channel.edit(name=f'Bots: {current_bot_count}', category=self.server_stats_category_channel[guild.id])
+        
+      else:
+        if channel.name.startswith('Users'):
+          await channel.edit(name=f'Users: {current_user_count}', category=self.server_stats_category_channel[guild.id])
+        elif channel.name.startswith('Bots'):
+          await channel.edit(name=f'Bots: {current_bot_count}', category=self.server_stats_category_channel[guild.id])
 
 # **************************************************************************************************************************
 
@@ -351,11 +358,16 @@ class Bot(commands.Bot):
   
   async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
 
+    if channel.name.startswith(('📅', '⏰', '🟢', 'Users', 'Bots')):
+      if [vc for vc in self.guild_voice_channels[channel.guild.id] if vc.name.startswith(channel.name.split(' ')[0])]:
+        await channel.delete()
+        return
+      self.guild_voice_channels[channel.guild.id].append(channel)
+      return
+    
     if isinstance(channel, discord.VoiceChannel):
       self.guild_voice_channels[channel.guild.id].append(channel)
 
-    if channel.name.startswith(('📅', '⏰', '🟢', 'Users', 'Bots')):
-      return
 
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(channel.guild.id))
     if isinstance(channel, discord.VoiceChannel):
@@ -382,11 +394,16 @@ class Bot(commands.Bot):
     server_logs_channel = self.get_channel(get_corresponding_server_logs_channel_id(after.guild.id))
     if isinstance(before, discord.VoiceChannel):
       channel_type = 'Voice Channel'
-      self.guild_voice_channels[after.guild.id] = [after if vc.id == after.id else vc for vc in self.guild_voice_channels[after.guild.id]]
+      self.guild_voice_channels[after.guild.id] = [after if vc.id == before.id else vc for vc in self.guild_voice_channels[after.guild.id]]
+
     elif isinstance(before, discord.TextChannel):
       channel_type = 'Text Channel'
     elif isinstance(before, discord.CategoryChannel):
       channel_type = 'Category'
+      if after.name == "╭─── 𝚂𝚎𝚛𝚟𝚎𝚛 𝚂𝚝𝚊𝚝𝚜 📊 ───╮" and (before.position != after.position):
+        await after.edit(position=0)
+        self.server_stats_category_channel[after.guild.id] = after
+        return
     elif isinstance(before, discord.StageChannel):
       channel_type = 'Stage'
     elif isinstance(before, discord.ForumChannel):
@@ -432,9 +449,16 @@ class Bot(commands.Bot):
 
     if isinstance(channel, discord.VoiceChannel):
       self.guild_voice_channels[channel.guild.id].remove(channel)
-
-    if channel.name.startswith(('📅', '⏰', '🟢', 'Users', 'Bots')):
-      return
+      if channel.name.startswith(('📅', '⏰', '🟢', 'Users', 'Bots')):
+        if channel.name.startswith('Users') or channel.name.startswith('Bots'):
+          await self.update_member_count(channel.guild)
+        elif channel.name.startswith('🟢'):
+          await self.update_member_status_count.__call__()
+        elif channel.name.startswith('📅'):
+          await self.update_date_channel.__call__()
+        elif channel.name.startswith('⏰'):
+          await self.update_time_channel.__call__()
+        return
     
     if channel.name.startswith("╭─── 𝚂𝚎𝚛𝚟𝚎𝚛 𝚂𝚝𝚊𝚝𝚜 📊 ───╮"):
       overwrites = {
