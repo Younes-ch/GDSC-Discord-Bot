@@ -29,7 +29,7 @@ class Snipe(commands.Cog):
                 embed = discord.Embed(title="🗑️ Last deleted messages:", color=0xca3b3b, timestamp=datetime.datetime.utcnow())
                 for message in messages[-min(10, len(messages)):]:
                     embed.add_field(name=f"**Message sent by `{message.author.name}`:**",
-                                    value=f'💬 {message.content}\nCreated at: {message.created_at.strftime("%d/%m/%Y %H:%M:%S")}', inline=False)
+                                    value=f'💬 {message.content}\nCreated at: {message.created_at.strftime("%d-%b-%Y %H:%M:%S")}', inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 await interaction.response.send_message("There are no deleted messages in this channel", ephemeral=True)
