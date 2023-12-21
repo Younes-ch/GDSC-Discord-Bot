@@ -30,7 +30,7 @@ class Snipe(commands.Cog):
                 for message in messages[-min(10, len(messages)):]:
                     embed.add_field(name=f"**Message sent by `{message.author}`:**",
                                     value=f'💬 {message.content}\nCreated at: {message.created_at.strftime("%d/%m/%Y %H:%M:%S")}', inline=False)
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.response.send_message(embed=embed)
             else:
                 await interaction.response.send_message("There are no deleted messages in this channel", ephemeral=True)
         else:

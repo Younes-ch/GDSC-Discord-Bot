@@ -206,7 +206,7 @@ class Help(commands.Cog):
                         embed = generate_embed(cmd["name"], cmd['dis'], interaction.user, {'usage' : [f'{cmd["name"]} {arg}' for arg in cmd['args']], 'examples' : cmd["exmp"]})
                     else:
                         embed = generate_embed(f"<{cmd['name']}:{cmd['id']}>", cmd['dis'], interaction.user, {'usage' : [f'{cmd["name"]} {arg}' for arg in cmd['args']], 'examples' : cmd["exmp"]})
-                    await interaction.response.send_message(embed=embed, ephemeral=True)
+                    await interaction.response.send_message(embed=embed)
                     break
 
 async def setup(bot: commands.Bot):
