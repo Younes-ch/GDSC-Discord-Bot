@@ -1,6 +1,7 @@
 from discord.ext import commands
 from discord import app_commands
 import discord
+import asyncio
 
 
 class Clear(commands.Cog):
@@ -16,19 +17,25 @@ class Clear(commands.Cog):
                         filter_by_role: discord.Role = None,
                         filter_by_bot: bool = False):
         
-
         if number_of_messages <= 0:
             await interaction.response.send_message("```diff\n- The number of messages to delete must be greater than 0.```", ephemeral=True)
             return
 
+        await interaction.response.send_message(f"```ini\nChecking the last [{number_of_messages}] messages that matches the criteria specified...```", ephemeral=True)
+
         channel = interaction.channel
         messages = [message async for message in channel.history(limit=number_of_messages) if self.check(message, filter_by_user, filter_by_role, filter_by_bot)]
         if len(messages) == 0:
-            await interaction.response.send_message(f"```ini\n[No messages found.] matching the criteria specified in the last [{number_of_messages}] messages.```", delete_after=5)
+            await interaction.followup.send(f"```ini\n[No messages found.] matching the criteria specified in the last [{number_of_messages}] messages.```", ephemeral=True)
             return
         for message in messages:
             await message.delete()
-        await interaction.response.send_message(f"```ini\n[{len(messages)}] messages has been deleted.```", delete_after=5)
+            await asyncio.sleep(0.3)
+        
+        message = await interaction.followup.send(f"```ini\n[{len(messages)}] message{'s' if len(messages) > 1 else ''} has been deleted.```", wait=True)
+        await interaction.delete_original_response()
+        await asyncio.sleep(5)
+        await message.delete()
     
 
     def check(self, message: discord.Message, filter_by_user: discord.Member, filter_by_role: discord.Role, filter_by_bot: bool):
