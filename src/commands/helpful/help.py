@@ -158,6 +158,20 @@ cmds = [
                 "dis" : "Sets the slowmode of the mentioned text channel to the given seconds or the current text channel if no text channel was mentioned."
             },
             {
+                "name": "/shut_up",
+                "id": "1187421616532099082",
+                "args": [""],
+                "exmp": ['</shut_up:1187421616532099082>'],
+                "dis": "Deletes every message sent in the channel except yours and other bots'."
+            },
+            {
+                "name": "/stop",
+                "id": "1187421616532099083",
+                "args": [""],
+                "exmp": ['</stop:1187421616532099083>'],
+                "dis": "Stops deleting every message sent in the channel."
+            },
+            {
                 "name" : '/help',
                 'id' : '1058100915942473804', 
                 'args' : ['[command]', ''],
@@ -177,7 +191,7 @@ class Help(commands.Cog):
         if command is None:
             embed1 = discord.Embed(title='Commands:', color=0x70e68a)
             embed1.set_footer(text='Requested by {}'.format(interaction.user.name), icon_url = interaction.user.display_avatar.url)
-            embed1.set_author(name='Github Link', url='https://github.com/Younes-ch/Discord-Bot-py', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
+            embed1.set_author(name='Github Link', url='https://github.com/Younes-ch/GDSC-Discord-Bot', icon_url='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
             embed2, embed3, embed4, embed5 = (embed1.copy() for _ in range(4))
             counter = 0
             for cmd in cmds:
