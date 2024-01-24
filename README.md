@@ -69,3 +69,9 @@ There are 25 commands in total, divided into 5 categories:
 ## Improvements
 
 The bot is not developed to be reusable for other users because it is tightly coupled to work in just the [GDSC Discord server](https://discord.gg/24VKKDyDh7), so this could be a future refactor.
+
+## Demo 
+
+https://github.com/Younes-ch/GDSC-Discord-Bot/assets/56512077/668fa085-d7de-4586-b090-781fee02e366
+
+
